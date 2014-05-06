@@ -464,6 +464,26 @@ namespace com.vzaar.api
 
             return true;
         }
+		public bool uploadSubtitle(SubtitleQuery query)
+		{
+			var url = apiUrl + "/api/subtitle/upload.xml";
+			var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vzaar-api><subtitle><language>" + query.language +
+					   "</language><video_id>" + query.videoId.ToString() + "</video_id><body>" + query.body +
+					   "</body></subtitle></vzaar-api>";
+
+			var response = executeRequest(url, "POST", data);
+
+			var doc = new XmlDocument();
+
+			doc.LoadXml(response);
+			var status = doc.SelectSingleNode("//status").InnerText;
+			if (status.ToLower() != "accepted")
+				return false;
+
+			return true;
+		}
+
+
 
         private string executeRequest ( string url )
         {

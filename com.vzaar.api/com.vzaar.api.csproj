@@ -46,6 +46,7 @@
     <Compile Include="AccountDetails.cs" />
     <Compile Include="OAuth\OAuthBase.cs" />
     <Compile Include="OAuth\OAuthConsumer.cs" />
+    <Compile Include="SubtitleQuery.cs" />
     <Compile Include="UploadProgressEventArgs.cs" />
     <Compile Include="UploadSignature.cs" />
     <Compile Include="UserDetails.cs" />
