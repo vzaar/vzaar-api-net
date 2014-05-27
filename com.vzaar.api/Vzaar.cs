@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Globalization;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -483,7 +484,65 @@ namespace com.vzaar.api
 			return true;
 		}
 
+		public string uploadThumbnail(Int64 videoId, string path)
+		{
+			var url = apiUrl + "/api/videos/" + videoId + "/upload_thumb.json";
+			var result = String.Empty;
+			var request = (HttpWebRequest)WebRequest.Create(url);
+			request.Method = "POST";
 
+			var consumer = new OAuth.OAuthConsumer();
+			consumer.SetTokenWithSecret(username, token);
+			request = consumer.Sign(request);
+
+			var boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", NumberFormatInfo.InvariantInfo);
+			request.ContentType = "multipart/form-data; boundary=" + boundary;
+			boundary = "--" + boundary;
+
+			var rs = request.GetRequestStream();
+
+			var buff = Encoding.ASCII.GetBytes(boundary + Environment.NewLine);
+			rs.Write(buff, 0, buff.Length);
+			buff = Encoding.UTF8.GetBytes(string.Format("Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"{2}", "vzaar-api[thumbnail]", path, Environment.NewLine));
+			rs.Write(buff, 0, buff.Length);
+			buff = Encoding.ASCII.GetBytes(string.Format("Content-Type: {0}{1}{1}", "image/jpeg", Environment.NewLine));
+			rs.Write(buff, 0, buff.Length);
+
+			var imgStream = File.Open(path, FileMode.Open);
+			imgStream.CopyTo(rs);
+
+			buff = Encoding.ASCII.GetBytes(Environment.NewLine);
+			rs.Write(buff, 0, buff.Length);
+
+			var boundaryBuffer = Encoding.ASCII.GetBytes(boundary + "--");
+			rs.Write(boundaryBuffer, 0, boundaryBuffer.Length);
+
+			rs.Close();
+
+			WebResponse response = null;
+			var rawResponse = String.Empty;
+
+			try
+			{
+				response = request.GetResponse();
+				Debug.WriteLine(((HttpWebResponse)response).StatusDescription);
+				var reader = new StreamReader(response.GetResponseStream());
+				rawResponse = reader.ReadToEnd();
+
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine(ex.ToString());
+				throw;
+			}
+			if (rawResponse.Length > 0)
+			{
+				JObject resp = JObject.Parse(rawResponse);
+				result = resp["vzaar-api"]["status"].ToString();
+			}
+
+			return result;
+		}
 
         private string executeRequest ( string url )
         {
