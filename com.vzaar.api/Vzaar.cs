@@ -484,6 +484,26 @@ namespace com.vzaar.api
 			return true;
 		}
 
+		public string generateThumbnail(Int64 videoId, int thumbTime)
+		{
+			var url = apiUrl + "/api/videos/" + videoId + "/generate_thumb.xml";
+			if (thumbTime < 0)
+				thumbTime = 0;
+			var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vzaar-api><video><thumb_time>" +
+					   +thumbTime + "</thumb_time></video></vzaar-api>";
+
+			var response = executeRequest(url, "POST", data);
+
+			if (response.Length > 0)
+			{
+				var doc = new XmlDocument();
+				doc.LoadXml(response);
+				var status = doc.SelectSingleNode("//status").InnerText;
+				return status;
+			}
+			return null;
+		}
+
 		public string uploadThumbnail(Int64 videoId, string path)
 		{
 			var url = apiUrl + "/api/videos/" + videoId + "/upload_thumb.json";
