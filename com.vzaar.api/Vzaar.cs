@@ -459,7 +459,7 @@ namespace com.vzaar.api
                 data += "<seo_url>" + query.seoUrl + "</seo_url>";
             data += "</video></vzaar-api>";
 
-            var response = executeRequest( url, "POST", data );
+            var response = executeRequest( url, "PUT", data );
             if (String.IsNullOrEmpty( response ))
                 return false;
 
@@ -592,6 +592,15 @@ namespace com.vzaar.api
                     var requestStream = request.GetRequestStream();
                     requestStream.Write( Encoding.UTF8.GetBytes( data ), 0, Encoding.UTF8.GetBytes( data ).Length );
                     requestStream.Close();
+                    break;
+
+                case "PUT":
+                    request.ContentType = "application/xml";
+                    request.ContentLength = Encoding.UTF8.GetBytes(data).Length;
+
+                    var reqS = request.GetRequestStream();
+                    reqS.Write(Encoding.UTF8.GetBytes(data), 0, Encoding.UTF8.GetBytes(data).Length);
+                    reqS.Close();
                     break;
 
                 case "DELETE":
