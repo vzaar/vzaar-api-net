@@ -564,6 +564,40 @@ namespace com.vzaar.api
 			return result;
 		}
 
+        public Int64 uploadLink(UploadLinkQuery query)
+        {
+            var url = apiUrl + "/api/upload/link.xml";
+
+            var signature = new UploadSignature();
+
+            signature = getUploadSignature();
+
+            var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                       "<vzaar-api>" +
+                            "<link_upload>" +
+                                "<key>" + signature.key + "</key>" +
+                                "<guid>" + signature.guid + "</guid>" +
+                                "<url>" + query.url + "</url>" +
+                                "<encoding_params>" +
+                                    "<title>" + query.title + "</title>" +
+                                    "<description>" + query.description + "</description>" +
+                                    "<size_id>" + query.size_id + "</size_id>" +
+                                    "<bitrate>" + query.bitrate + "</bitrate>" +
+                                    "<width>" + query.width + "</width>" +
+                                    "<transcoding>" + query.transcoding.ToString().ToLower() + "</transcoding>" +
+                                "</encoding_params>" +
+                            "</link_upload>" +
+                       "</vzaar-api>";
+            
+            var response = executeRequest(url, "POST", data);
+
+            var doc = new XmlDocument();
+            doc.LoadXml(response);
+            var videoId = Int64.Parse(doc.SelectSingleNode("//id").InnerText);
+
+            return videoId;
+        }
+
         private string executeRequest ( string url )
         {
             return executeRequest( url, "GET", null );
