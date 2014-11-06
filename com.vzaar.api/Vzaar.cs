@@ -53,30 +53,30 @@ namespace com.vzaar.api
         /// </summary>
         /// <param name="username">is the vzaar login name for the user. Note: This must be the actual username and not the email address</param>
         /// <returns></returns>
-        public UserDetails getUserDetails ( string username )
+        public UserDetails getUserDetails(string username)
         {
-            var url = apiUrl + "/users/" + username + ".json";
-            var response = executeRequest( url );
-            var jo = (JObject)JsonConvert.DeserializeObject( response );
+            var url = apiUrl + "/api/users/" + username + ".json";
+            var response = executeRequest(url);
+            var jo = (JObject)JsonConvert.DeserializeObject(response);
 
             var details = new UserDetails
             {
-                videoCount = (Int64)jo["video_count"],
-                videosTotalSize = (Int64)jo["video_total_size"],
-                maxFileSize = (Int64)jo["max_file_size"],
-                playCount = (Int64)jo["play_count"],
+                videoCount = String.IsNullOrEmpty(jo["video_count"].ToString()) ? 0 : Int64.Parse(jo["video_count"].ToString()),
+                videosTotalSize = String.IsNullOrEmpty(jo["video_total_size"].ToString()) ? 0 : Int64.Parse(jo["video_total_size"].ToString()),
+                maxFileSize = String.IsNullOrEmpty(jo["max_file_size"].ToString()) ? 0 : Int64.Parse(jo["max_file_size"].ToString()),
+                playCount = String.IsNullOrEmpty(jo["play_count"].ToString()) ? 0 : Int64.Parse(jo["play_count"].ToString()),
                 version = (string)jo["version"],
-                authorId = (int)jo["author_id"],
+                authorId = String.IsNullOrEmpty(jo["author_id"].ToString()) ? 0 : int.Parse(jo["author_id"].ToString()),
                 authorAccountTitle = (string)jo["author_account_title"],
                 authorName = (string)jo["author_name"],
-                authorAccount = (int)jo["author_account"],
+                authorAccount = String.IsNullOrEmpty(jo["author_account"].ToString()) ? 0 : int.Parse(jo["author_account"].ToString()),
                 authorUrl = (string)jo["author_url"],
-                createdAt = DateTime.Parse( (string)jo["created_at"] ),
-                bandwidthThisMonth = (Int64)jo["bandwidth_this_month"]
+                createdAt = DateTime.Parse((string)jo["created_at"]),
+                bandwidthThisMonth = String.IsNullOrEmpty(jo["bandwidth_this_month"].ToString()) ? 0 : Int64.Parse(jo["bandwidth_this_month"].ToString())
             };
 
             var bandwidth = new List<UserBandwidthDetails>();
-            JsonConvert.PopulateObject( jo["bandwidth"].ToString(), bandwidth );
+            JsonConvert.PopulateObject(jo["bandwidth"].ToString(), bandwidth);
             details.bandwidth = bandwidth;
 
             return details;
@@ -87,27 +87,27 @@ namespace com.vzaar.api
         /// </summary>
         /// <param name="accountId">is the vzaar account type. This is an integer.</param>
         /// <returns></returns>
-        public AccountDetails getAccountDetails ( int accountId )
+        public AccountDetails getAccountDetails(int accountId)
         {
             var url = apiUrl + "/api/accounts/" + accountId + ".json";
 
-            var response = executeRequest( url );
-            var jo = (JObject)JsonConvert.DeserializeObject( response );
+            var response = executeRequest(url);
+            var jo = (JObject)JsonConvert.DeserializeObject(response);
 
             var details = new AccountDetails
             {
-                accountId = (int)jo["account_id"],
+                accountId = String.IsNullOrEmpty(jo["account_id"].ToString()) ? 0 : int.Parse(jo["account_id"].ToString()),
                 title = (string)jo["title"],
-                bandwidth = (Int64)jo["bandwidth"],
+                bandwidth = String.IsNullOrEmpty(jo["bandwidth"].ToString()) ? 0 : Int64.Parse(jo["bandwidth"].ToString()),
                 cost = new AccountCostDetails
                 {
-                    monthly = (int)jo["cost"]["monthly"],
+                    monthly = String.IsNullOrEmpty(jo["cost"]["monthly"].ToString()) ? 0 : int.Parse(jo["cost"]["monthly"].ToString()),
                     currency = (string)jo["cost"]["currency"]
                 },
                 rights = new AccountRightsDetails
                 {
-                    borderless = (bool)jo["rights"]["borderless"],
-                    searchEnhancer = (bool)jo["rights"]["searchEnhancer"]
+                    borderless = String.IsNullOrEmpty(jo["rights"]["borderless"].ToString()) ? false : bool.Parse(jo["rights"]["borderless"].ToString()),
+                    searchEnhancer = String.IsNullOrEmpty(jo["rights"]["searchEnhancer"].ToString()) ? false : bool.Parse(jo["rights"]["searchEnhancer"].ToString()),
                 }
             };
             return details;
@@ -118,35 +118,35 @@ namespace com.vzaar.api
         /// </summary>
         /// <param name="videoId"></param>
         /// <returns></returns>
-        public VideoDetails getVideoDetails ( Int64 videoId )
+        public VideoDetails getVideoDetails(Int64 videoId)
         {
             var url = apiUrl + "/api/videos/" + videoId + ".json";
 
-            var response = executeRequest( url );
-            var jo = (JObject)JsonConvert.DeserializeObject( response );
+            var response = executeRequest(url);
+            var jo = (JObject)JsonConvert.DeserializeObject(response);
 
             var result = new VideoDetails
             {
-                duration = (decimal)jo["duration"],
+                duration = String.IsNullOrEmpty(jo["duration"].ToString()) ? 0 : decimal.Parse(jo["duration"].ToString()),
                 type = (string)jo["type"],
-                height = (int)jo["height"],
-                width = (int)jo["width"],
+                height = String.IsNullOrEmpty(jo["height"].ToString()) ? 0 : int.Parse(jo["height"].ToString()),
+                width = String.IsNullOrEmpty(jo["width"].ToString()) ? 0 : int.Parse(jo["width"].ToString()),
                 url = (string)jo["video_url"],
                 provider = new VideoDetailsProvider
                 {
                     name = (string)jo["provider_name"],
                     url = (string)jo["provider_url"]
                 },
-                playCount = (Int64)jo["play_count"],
+                playCount = String.IsNullOrEmpty(jo["play_count"].ToString()) ? 0 : Int64.Parse(jo["play_count"].ToString()),
                 videoStatus = new VideoDetailsVideoStatus
                 {
-                    id = (int)jo["video_status_id"],
+                    id = String.IsNullOrEmpty(jo["video_status_id"].ToString()) ? 0 : int.Parse(jo["video_status_id"].ToString()),
                     description = (string)jo["video_status_description"]
                 },
                 thumbnail = new VideoDetailsThumbnail
                 {
-                    height = (int)jo["thumbnail_height"],
-                    width = (int)jo["thumbnail_width"],
+                    height = String.IsNullOrEmpty(jo["thumbnail_height"].ToString()) ? 0 : int.Parse(jo["thumbnail_height"].ToString()),
+                    width = String.IsNullOrEmpty(jo["thumbnail_width"].ToString()) ? 0 : int.Parse(jo["thumbnail_width"].ToString()),
                     url = (string)jo["thumbnail_url"]
                 },
                 author = new VideoDetailsAuthor
@@ -158,11 +158,11 @@ namespace com.vzaar.api
                 html = (string)jo["html"],
                 framegrab = new VideoDetailsFramegrab
                 {
-                    height = (int)jo["framegrab_height"],
-                    width = (int)jo["framegrab_width"],
+                    height = String.IsNullOrEmpty(jo["framegrab_height"].ToString()) ? 0 : int.Parse(jo["framegrab_height"].ToString()),
+                    width = String.IsNullOrEmpty(jo["framegrab_width"].ToString()) ? 0 : int.Parse(jo["framegrab_width"].ToString()),
                     url = (string)jo["framegrab_url"]
                 },
-                totalSize = (Int64)jo["total_size"],
+                totalSize = String.IsNullOrEmpty(jo["total_size"].ToString()) ? 0 : Int64.Parse(jo["total_size"].ToString()),
                 title = (string)jo["title"],
                 description = (string)jo["description"]
             };
@@ -174,13 +174,13 @@ namespace com.vzaar.api
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public List<Video> getVideoList ( VideoListQuery query )
+        public List<Video> getVideoList(VideoListQuery query)
         {
             var url = apiUrl + "/api/" + username + "/videos.json?count=" + query.count.ToString();
 
             if (query.labels.Length > 0)
             {
-                url += "&labels=" + String.Join( ",", query.labels ); //should we have it URL Encoded?
+                url += "&labels=" + String.Join(",", query.labels);
             }
 
             if (query.status != String.Empty)
@@ -199,11 +199,11 @@ namespace com.vzaar.api
 
             if (query.title != String.Empty)
             {
-                url += "&title=" + HttpUtility.UrlEncode( query.title );
+                url += "&title=" + HttpUtility.UrlEncode(query.title);
             }
 
-            var response = executeRequest( url );
-            var jo = (JArray)JsonConvert.DeserializeObject( response );
+            var response = executeRequest(url);
+            var jo = (JArray)JsonConvert.DeserializeObject(response);
 
             var result = new List<Video>();
 
@@ -212,28 +212,28 @@ namespace com.vzaar.api
                 var video = new Video
                 {
                     status = (string)o["status"],
-                    statusId = (int)o["status_id"],
-                    duration = (decimal)o["duration"],
+                    statusId = String.IsNullOrEmpty(o["status_id"].ToString()) ? 0 : int.Parse(o["status_id"].ToString()),
+                    duration = String.IsNullOrEmpty(o["duration"].ToString()) ? 0 : decimal.Parse(o["duration"].ToString()),
                     description = (string)o["description"],
-                    height = string.IsNullOrEmpty( o["height"].ToString() ) ? 0 : int.Parse( o["height"].ToString() ),
-                    createdAt = DateTime.Parse( (string)o["created_at"].ToString() ),
-                    width = string.IsNullOrEmpty( o["width"].ToString() ) ? 0 : int.Parse( o["width"].ToString() ),
-                    playCount = (Int64)o["play_count"],
+                    height = string.IsNullOrEmpty(o["height"].ToString()) ? 0 : int.Parse(o["height"].ToString()),
+                    createdAt = DateTime.Parse((string)o["created_at"].ToString()),
+                    width = string.IsNullOrEmpty(o["width"].ToString()) ? 0 : int.Parse(o["width"].ToString()),
+                    playCount = String.IsNullOrEmpty(o["play_count"].ToString()) ? 0 : Int64.Parse(o["play_count"].ToString()),
                     version = (string)o["version"],
                     thumbnail = (string)o["thumbnail"],
                     url = (string)o["url"],
-                    id = (Int64)o["id"],
+                    id = String.IsNullOrEmpty(o["id"].ToString()) ? 0 : Int64.Parse(o["id"].ToString()),
                     title = (string)o["title"],
                     user = new VideoAuthor
                     {
-                        videoCount = (Int64)o["user"]["video_count"],
+                        videoCount = String.IsNullOrEmpty(o["user"]["video_count"].ToString()) ? 0 : Int64.Parse(o["user"]["video_count"].ToString()),
                         name = (string)o["user"]["author_name"],
-                        account = (int)o["user"]["author_account"],
+                        account = String.IsNullOrEmpty(o["user"]["author_account"].ToString()) ? 0 : int.Parse(o["user"]["author_account"].ToString()),
                         url = (string)o["user"]["author_url"]
                     }
                 };
 
-                result.Add( video );
+                result.Add(video);
             }
 
             return result;
