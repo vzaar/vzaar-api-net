@@ -124,48 +124,67 @@ namespace com.vzaar.api
 
             var response = executeRequest(url);
             var jo = (JObject)JsonConvert.DeserializeObject(response);
+            var result = new VideoDetails();
 
-            var result = new VideoDetails
+            try
             {
-                duration = String.IsNullOrEmpty(jo["duration"].ToString()) ? 0 : decimal.Parse(jo["duration"].ToString()),
-                type = (string)jo["type"],
-                height = String.IsNullOrEmpty(jo["height"].ToString()) ? 0 : int.Parse(jo["height"].ToString()),
-                width = String.IsNullOrEmpty(jo["width"].ToString()) ? 0 : int.Parse(jo["width"].ToString()),
-                url = (string)jo["video_url"],
-                provider = new VideoDetailsProvider
+                result = new VideoDetails
                 {
-                    name = (string)jo["provider_name"],
-                    url = (string)jo["provider_url"]
-                },
-                playCount = String.IsNullOrEmpty(jo["play_count"].ToString()) ? 0 : Int64.Parse(jo["play_count"].ToString()),
-                videoStatus = new VideoDetailsVideoStatus
+                    duration = String.IsNullOrEmpty(jo["duration"].ToString()) ? 0 : decimal.Parse(jo["duration"].ToString()),
+                    type = (string)jo["type"],
+                    height = String.IsNullOrEmpty(jo["height"].ToString()) ? 0 : int.Parse(jo["height"].ToString()),
+                    width = String.IsNullOrEmpty(jo["width"].ToString()) ? 0 : int.Parse(jo["width"].ToString()),
+                    url = (string)jo["video_url"],
+                    provider = new VideoDetailsProvider
+                    {
+                        name = (string)jo["provider_name"],
+                        url = (string)jo["provider_url"]
+                    },
+                    playCount = String.IsNullOrEmpty(jo["play_count"].ToString()) ? 0 : Int64.Parse(jo["play_count"].ToString()),
+                    videoStatus = new VideoDetailsVideoStatus
+                    {
+                        id = String.IsNullOrEmpty(jo["video_status_id"].ToString()) ? 0 : int.Parse(jo["video_status_id"].ToString()),
+                        description = (string)jo["video_status_description"]
+                    },
+                    thumbnail = new VideoDetailsThumbnail
+                    {
+                        height = String.IsNullOrEmpty(jo["thumbnail_height"].ToString()) ? 0 : int.Parse(jo["thumbnail_height"].ToString()),
+                        width = String.IsNullOrEmpty(jo["thumbnail_width"].ToString()) ? 0 : int.Parse(jo["thumbnail_width"].ToString()),
+                        url = (string)jo["thumbnail_url"]
+                    },
+                    author = new VideoDetailsAuthor
+                    {
+                        name = (string)jo["author_name"],
+                        url = (string)jo["author_url"]
+                    },
+                    poster = "http://view.vzaar.com/" + videoId + "/image",
+                    html = (string)jo["html"],
+                    framegrab = new VideoDetailsFramegrab
+                    {
+                        height = String.IsNullOrEmpty(jo["framegrab_height"].ToString()) ? 0 : int.Parse(jo["framegrab_height"].ToString()),
+                        width = String.IsNullOrEmpty(jo["framegrab_width"].ToString()) ? 0 : int.Parse(jo["framegrab_width"].ToString()),
+                        url = (string)jo["framegrab_url"]
+                    },
+                    totalSize = String.IsNullOrEmpty(jo["total_size"].ToString()) ? 0 : Int64.Parse(jo["total_size"].ToString()),
+                    title = (string)jo["title"],
+                    description = (string)jo["description"]
+                };
+            }
+            catch
+            {
+                result = new VideoDetails
                 {
-                    id = String.IsNullOrEmpty(jo["video_status_id"].ToString()) ? 0 : int.Parse(jo["video_status_id"].ToString()),
-                    description = (string)jo["video_status_description"]
-                },
-                thumbnail = new VideoDetailsThumbnail
-                {
-                    height = String.IsNullOrEmpty(jo["thumbnail_height"].ToString()) ? 0 : int.Parse(jo["thumbnail_height"].ToString()),
-                    width = String.IsNullOrEmpty(jo["thumbnail_width"].ToString()) ? 0 : int.Parse(jo["thumbnail_width"].ToString()),
-                    url = (string)jo["thumbnail_url"]
-                },
-                author = new VideoDetailsAuthor
-                {
-                    name = (string)jo["author_name"],
-                    url = (string)jo["author_url"]
-                },
-                poster = "http://view.vzaar.com/" + videoId + "/image",
-                html = (string)jo["html"],
-                framegrab = new VideoDetailsFramegrab
-                {
-                    height = String.IsNullOrEmpty(jo["framegrab_height"].ToString()) ? 0 : int.Parse(jo["framegrab_height"].ToString()),
-                    width = String.IsNullOrEmpty(jo["framegrab_width"].ToString()) ? 0 : int.Parse(jo["framegrab_width"].ToString()),
-                    url = (string)jo["framegrab_url"]
-                },
-                totalSize = String.IsNullOrEmpty(jo["total_size"].ToString()) ? 0 : Int64.Parse(jo["total_size"].ToString()),
-                title = (string)jo["title"],
-                description = (string)jo["description"]
-            };
+                    videoStatus = new VideoDetailsVideoStatus
+                    {
+                        id =
+                            String.IsNullOrEmpty(jo["vzaar-api"]["video"]["video_status_id"].ToString())
+                                ? 0
+                                : int.Parse(jo["vzaar-api"]["video"]["video_status_id"].ToString()),
+                        description = (string)jo["vzaar-api"]["video"]["state"]
+                    }
+                };
+            }
+            
             return result;
         }
 
