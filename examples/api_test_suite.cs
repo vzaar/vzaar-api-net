@@ -48,7 +48,7 @@ namespace VzaarApi {
       var query = new VideoListQuery
       {
        count = 10,
-       labels = new string[]{"api%2Capi2"}
+       labels = new string[]{"api", "api2"}
       };
       
       var col = this.api.getVideoList(query);
