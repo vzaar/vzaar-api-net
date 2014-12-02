@@ -199,7 +199,8 @@ namespace com.vzaar.api
 
             if (query.labels.Length > 0)
             {
-                url += "&labels=" + String.Join(",", query.labels);
+                var outh = new OAuthBase();
+                url += "&labels=" + outh.UrlEncode(String.Join(",", query.labels));
             }
 
             if (query.status != String.Empty)
