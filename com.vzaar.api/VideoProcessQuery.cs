@@ -8,7 +8,7 @@ namespace com.vzaar.api
         public string title = String.Empty;
         public string description = String.Empty;
         public string[] labels = new string[] { };
-        public VideoProfile profile = VideoProfile.ORIGINAL;
+        public int profile = 5;
         public bool transcode = false;
         public string replaceId = String.Empty;
     }
