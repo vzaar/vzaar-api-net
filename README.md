@@ -106,7 +106,7 @@ api.bufferSize = 262144; //256 kb
 ```csharp
 var processQuery = new VideoProcessQuery
 {
-	guid: "vzcf7af7bc5a734c30a46ca3911e7f3458",
+	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
 	title = "My awesome video",
 	description = "The story about how easy to build awesome apps with vzaar API",
 	profile = VideoProfile.ORIGINAL,
@@ -120,7 +120,7 @@ If you want to replace existing video with some newly uploaded, you can call _Pr
 ```csharp
 var processQuery = new VideoProcessQuery
 {
-	guid: "vzcf7af7bc5a734c30a46ca3911e7f3458",
+	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
 	replaceId = 12345678, //vzaar Video ID of the video you want to replace
 	title = "My awesome video",
 	description = "The story about how easy to build awesome apps with vzaar API",
