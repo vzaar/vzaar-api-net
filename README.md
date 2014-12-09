@@ -103,14 +103,16 @@ api.bufferSize = 262144; //256 kb
 
 >This API call tells the vzaar system to process a newly uploaded video. This will encode it if necessary and then provide a vzaar video ID back.
 
+Available profiles: small(1), medium(2), large(3), high definition(4), original(5), custom(6)
+
 ```csharp
 var processQuery = new VideoProcessQuery
 {
-	guid: "vzcf7af7bc5a734c30a46ca3911e7f3458",
-	title: "My awesome video",
-	description: "The story about how easy to build awesome apps with vzaar API",
-	profile: VideoProfile.ORIGINAL,
-	labels: new string[]{"api","tutorials"}
+	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
+	title = "My awesome video",
+	description = "The story about how easy to build awesome apps with vzaar API",
+	profile = 5,
+	labels = new string[]{"api","tutorials"}
 };
 var x = api.processVideo(processQuery);
 ```
@@ -120,12 +122,12 @@ If you want to replace existing video with some newly uploaded, you can call _Pr
 ```csharp
 var processQuery = new VideoProcessQuery
 {
-	guid: "vzcf7af7bc5a734c30a46ca3911e7f3458",
-	replaceId: 12345678, //vzaar Video ID of the video you want to replace
-	title: "My awesome video",
-	description: "The story about how easy to build awesome apps with vzaar API",
-	profile: VideoProfile.ORIGINAL,
-	labels: new string[]{"api","tutorials"}
+	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
+	replaceId = 12345678, //vzaar Video ID of the video you want to replace
+	title = "My awesome video",
+	description = "The story about how easy to build awesome apps with vzaar API",
+	profile = 5,
+	labels = new string[]{"api","tutorials"}
 };
 var x = api.processVideo(processQuery);
 ```
@@ -137,9 +139,9 @@ var x = api.processVideo(processQuery);
 ```csharp
 var editQuery = new VideoEditQuery
 {
-	title: "My REALLY awesome video",
-	description: "The story about how easy to build awesome apps with vzaar API",
-	markAsPrivate: true
+	title = "My REALLY awesome video",
+	description = "The story about how easy to build awesome apps with vzaar API",
+	markAsPrivate = true
 };
 var x = api.editVideo(editQuery);
 ```

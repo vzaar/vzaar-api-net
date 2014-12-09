@@ -14,7 +14,7 @@ namespace VzaarApi {
     public string username;
     public string token;
     public string apiUrl;
-   
+
     public TestSuite(string username, string token, string apiUrl, int videoId) {
       this.username = username;
       this.token = token;
@@ -50,7 +50,7 @@ namespace VzaarApi {
        count = 10,
        labels = new string[]{"api", "api2"}
       };
-      
+
       var col = this.api.getVideoList(query);
       this.assertEqual(col.Count, 1, "videoList");
     }
@@ -61,7 +61,7 @@ namespace VzaarApi {
         guid = guid,
         title = "for deletion",
         description = ".net api test",
-        profile = VideoProfile.ORIGINAL
+        profile = 5
       };
       var vidId = this.api.processVideo(query);
       var res = this.api.deleteVideo(vidId);
@@ -81,18 +81,18 @@ namespace VzaarApi {
     public void videoUploadTest() {
       var guid = this.api.uploadVideo("./examples/video.mp4");
       var title = String.Concat("api-net-", this.RandomString(5));
-      
+
       var query = new VideoProcessQuery {
         guid = guid,
         title = title,
         description = ".net api test",
-        profile = VideoProfile.ORIGINAL
+        profile = 5
       };
       var vidId = this.api.processVideo(query);
       var vid = this.api.getVideoDetails(vidId);
 
       this.assertEqual(vid.videoStatus.id, 11, "videoUpload");
-      
+
       // clean up
       this.api.deleteVideo(vidId);
     }
@@ -101,13 +101,13 @@ namespace VzaarApi {
     public void linkUploadTest() {
       var url = "http://samples.mplayerhq.hu/MPEG-4/turn-on-off.mp4";
       var title = String.Concat("api-net-lu-", this.RandomString(5));
-      
+
       var query = new UploadLinkQuery {
         title = title,
         url = url,
         description = ".net api test"
       };
-      
+
       var videoId = this.api.uploadLink(query);
       var vid = this.api.getVideoDetails(videoId);
       this.assertEqual(vid.videoStatus.id, 11, "linkUpload");
@@ -116,13 +116,13 @@ namespace VzaarApi {
 
     public void uploadSubtitleTest() {
       var body = "srt";
-      
+
       var query = new SubtitleQuery {
         body = body,
         videoId = this.videoId,
         language = "en"
       };
-      
+
       var res = this.api.uploadSubtitle(query);
       this.assertEqual(res, true, "uploadSubtitle");
     }
@@ -133,12 +133,12 @@ namespace VzaarApi {
     }
 
 
-//    public void uploadThumbnailTest() {
-//      var path = "./examples/pic.jpg";
-//      
-//      var status = this.api.uploadThumbnail(this.videoId, path);
-//      this.assertEqual(status, "Accepted", "uploadThumbnail");
-//    }
+    public void uploadThumbnailTest() {
+      var path = "./examples/pic.jpg";
+
+      var status = this.api.uploadThumbnail(this.videoId, path);
+      this.assertEqual(status, "Accepted", "uploadThumbnail");
+    }
 
 
 
@@ -183,7 +183,7 @@ namespace VzaarApi {
       var token = "cyCFbqQ4YTkrQhjFu7OZ2yoO3ol2avg79jRqWhKCpo";
       var url = "http://app.vzaar.localhost";
       var videoId = 1465464;
-      
+
       if (args.Length > 0) {
         username = args[1];
         token = args[3];
