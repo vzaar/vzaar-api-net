@@ -107,10 +107,10 @@ api.bufferSize = 262144; //256 kb
 var processQuery = new VideoProcessQuery
 {
 	guid: "vzcf7af7bc5a734c30a46ca3911e7f3458",
-	title: "My awesome video",
-	description: "The story about how easy to build awesome apps with vzaar API",
-	profile: VideoProfile.ORIGINAL,
-	labels: new string[]{"api","tutorials"}
+	title = "My awesome video",
+	description = "The story about how easy to build awesome apps with vzaar API",
+	profile = VideoProfile.ORIGINAL,
+	labels = new string[]{"api","tutorials"}
 };
 var x = api.processVideo(processQuery);
 ```
@@ -121,11 +121,11 @@ If you want to replace existing video with some newly uploaded, you can call _Pr
 var processQuery = new VideoProcessQuery
 {
 	guid: "vzcf7af7bc5a734c30a46ca3911e7f3458",
-	replaceId: 12345678, //vzaar Video ID of the video you want to replace
-	title: "My awesome video",
-	description: "The story about how easy to build awesome apps with vzaar API",
-	profile: VideoProfile.ORIGINAL,
-	labels: new string[]{"api","tutorials"}
+	replaceId = 12345678, //vzaar Video ID of the video you want to replace
+	title = "My awesome video",
+	description = "The story about how easy to build awesome apps with vzaar API",
+	profile = VideoProfile.ORIGINAL,
+	labels = new string[]{"api","tutorials"}
 };
 var x = api.processVideo(processQuery);
 ```
@@ -137,9 +137,9 @@ var x = api.processVideo(processQuery);
 ```csharp
 var editQuery = new VideoEditQuery
 {
-	title: "My REALLY awesome video",
-	description: "The story about how easy to build awesome apps with vzaar API",
-	markAsPrivate: true
+	title = "My REALLY awesome video",
+	description = "The story about how easy to build awesome apps with vzaar API",
+	markAsPrivate = true
 };
 var x = api.editVideo(editQuery);
 ```
