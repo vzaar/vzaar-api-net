@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Vzaar</id>
+    <version>1.0.0</version>
+    <title>Vzaar</title>
+    <description>Vzaar API client for .NET</description>
+    <authors>Evi Skitsanos</authors>
+    <language>en-US</language>
+    <projectUrl>https://github.com/vzaar/vzaar-api-net</projectUrl>
+    <licenseUrl>https://github.com/vzaar/vzaar-api-net/blob/master/LICENSE</licenseUrl>
+    <tags>vzaar api</tags>
+  </metadata>
+</package>
