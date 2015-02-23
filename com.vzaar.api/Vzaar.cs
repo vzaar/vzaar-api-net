@@ -169,6 +169,10 @@ namespace com.vzaar.api
                     title = (string)jo["title"],
                     description = (string)jo["description"]
                 };
+
+                var renditions = new List<VideoRendition>();
+                JsonConvert.PopulateObject(jo["renditions"].ToString(), renditions);
+                result.renditions = renditions;
             }
             catch
             {

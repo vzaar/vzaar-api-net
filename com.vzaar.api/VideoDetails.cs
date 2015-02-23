@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace com.vzaar.api
 {
@@ -28,6 +29,7 @@ namespace com.vzaar.api
 		public VideoDetailsThumbnail thumbnail;
 		public VideoDetailsFramegrab framegrab;
 		public VideoDetailsVideoStatus videoStatus;
+        public List<VideoRendition> renditions = new List<VideoRendition>();
 
 	}
 
@@ -62,4 +64,10 @@ namespace com.vzaar.api
 		public int height;
 		public string url;
 	}
+    public class VideoRendition
+    {
+        public int statusId;
+        public string status;
+        public string type;
+    }
 }
