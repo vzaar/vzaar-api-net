@@ -1,5 +1,9 @@
-2015-01-14 JC <jozef@vzaar.com>
-	
+[1.1.0] 2015-02-23 EV <evi@vzaar.com>
+
+	* video renditions added to videoDetails
+
+[1.0.0] 2015-01-14 JC <jozef@vzaar.com>
+
 	* vzaar.nuspec file added
 	* licence added
 	* changelog added
