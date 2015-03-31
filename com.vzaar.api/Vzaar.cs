@@ -440,8 +440,8 @@ namespace com.vzaar.api
             var data = "<vzaar-api><video>";
             if (query.replaceId != "")
                 data += "<replace_id>" + query.replaceId + "</replace_id>";
-            data += "<guid>" + query.guid + "</guid><title>" + query.title + "</title><description>" + query.description + "</description><labels>";
-            data += String.Join( ",", query.labels ) + "</labels><profile>" + (int)query.profile + "</profile>";
+            data += "<guid>" + query.guid + "</guid><title>" + HttpUtility.HtmlEncode(query.title) + "</title><description>" + HttpUtility.HtmlEncode(query.description) + "</description><labels>";
+            data += HttpUtility.HtmlEncode(String.Join( ",", query.labels )) + "</labels><profile>" + (int)query.profile + "</profile>";
             if (query.transcode)
                 data += "<transcoding>true</transcoding>";
             data += "</video> </vzaar-api>";
@@ -474,9 +474,9 @@ namespace com.vzaar.api
         public bool editVideo ( VideoEditQuery query )
         {
 
-            var url = apiUrl + "/api/videos/" + query.id.ToString() + ".json";
+            var url = apiUrl + "/api/videos/" + query.id.ToString() + ".xml";
 
-            var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vzaar-api><_method>put</_method><video><title>" + query.title + "</title><description>" + query.description + "</description>";
+            var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vzaar-api><_method>put</_method><video><title>" + HttpUtility.HtmlEncode(query.title) + "</title><description>" + HttpUtility.HtmlEncode(query.description) + "</description>";
             data += "<private>" + query.markAsPrivate + "</private>";
 
             if (query.seoUrl != "")
@@ -492,8 +492,8 @@ namespace com.vzaar.api
 		public bool uploadSubtitle(SubtitleQuery query)
 		{
 			var url = apiUrl + "/api/subtitle/upload.xml";
-			var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vzaar-api><subtitle><language>" + query.language +
-					   "</language><video_id>" + query.videoId.ToString() + "</video_id><body>" + query.body +
+		    var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vzaar-api><subtitle><language>" + query.language +
+		               "</language><video_id>" + query.videoId.ToString() + "</video_id><body>" + HttpUtility.HtmlEncode(query.body)+
 					   "</body></subtitle></vzaar-api>";
 
 			var response = executeRequest(url, "POST", data);
@@ -601,10 +601,10 @@ namespace com.vzaar.api
                             "<link_upload>" +
                                 "<key>" + signature.key + "</key>" +
                                 "<guid>" + signature.guid + "</guid>" +
-                                "<url>" + query.url + "</url>" +
+                                "<url>" + HttpUtility.HtmlEncode(query.url) + "</url>" +
                                 "<encoding_params>" +
-                                    "<title>" + query.title + "</title>" +
-                                    "<description>" + query.description + "</description>" +
+                                    "<title>" + HttpUtility.HtmlEncode(query.title) + "</title>" +
+                                    "<description>" + HttpUtility.HtmlEncode(query.description) + "</description>" +
                                     "<size_id>" + query.size_id + "</size_id>" +
                                     "<bitrate>" + query.bitrate + "</bitrate>" +
                                     "<width>" + query.width + "</width>" +
