@@ -7,7 +7,7 @@ namespace whoami
 	{
 		static void Main(string[] args)
 		{
-			var api = new Vzaar("skitsanos", "zfGnd3DVI71jQ7dTtz9mHA953XeIQeodmZvSE6AbTX8");
+			var api = new Vzaar("username", "token");
 			Console.WriteLine(api.whoAmI());
 		}
 	}

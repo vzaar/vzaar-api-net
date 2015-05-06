@@ -8,7 +8,7 @@ namespace user_details
 	{
 		static void Main(string[] args)
 		{
-			var api = new Vzaar("skitsanos", "abfDnd3DVI71jQ7dTtz9mHA953XeIQeodmZvSE6AbTX8");
+			var api = new Vzaar("username", "token");
 			var details = api.getUserDetails("skitsanos");
 
 			Console.WriteLine("Videos owned: " + details.videoCount);

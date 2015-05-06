@@ -8,7 +8,7 @@
 
 	protected void Page_Load(object sender, EventArgs e)
 	{
-		var api = new Vzaar("skitsanos", "u2nd3DVI71jQ7dTtz9mHA953XeIQeodmZvSE6AbTX8");
+		var api = new Vzaar("username", "token");
 		signature = api.getUploadSignature();
 	}
 </script>
