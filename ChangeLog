@@ -1,3 +1,7 @@
+[1.1.2] 2015-06-16 EV <evi@vzaar.com>
+
+	* update to support TLS
+	
 [1.1.1] 2015-03-31 EV <evi@vzaar.com>
 
 	* xml sanitizer added added to link upload and video processing
