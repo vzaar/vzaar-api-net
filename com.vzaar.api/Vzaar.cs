@@ -348,7 +348,7 @@ namespace com.vzaar.api
             wr.Headers.Add( "Accept-Encoding", "gzip,deflate" );
             wr.Headers.Add( "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7" );
             wr.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
             wr.AllowWriteStreamBuffering = false;
             wr.SendChunked = false;
             //wr.Timeout = 1000000000;
