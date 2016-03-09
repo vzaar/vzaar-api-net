@@ -226,6 +226,8 @@ namespace com.vzaar.api
                 url += "&title=" + HttpUtility.UrlEncode(query.title);
             }
 
+            url += "&page=" + ((query.page > 1) ? query.page : 1);
+
             var response = executeRequest(url);
             var jo = (JArray)JsonConvert.DeserializeObject(response);
 
