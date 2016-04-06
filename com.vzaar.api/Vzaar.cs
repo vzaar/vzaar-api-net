@@ -267,17 +267,34 @@ namespace com.vzaar.api
 
         public UploadSignature getUploadSignature ()
         {
-            var url = apiUrl + "/api/videos/signature";
+            return getUploadSignature(false);
+        }
+
+        public UploadSignature getUploadSignature(bool multipart)
+        {
+            var url = apiUrl + "/api/v1.1/videos/signature";
 
             if (enableFlashSupport)
             {
                 url += "?flash_request=true";
             }
 
-            var response = executeRequest( url );
+            if (multipart)
+            {
+                if (enableFlashSupport)
+                {
+                    url += "&multipart=true";
+                }
+                else
+                {
+                    url += "?multipart=true";
+                }
+            }
+
+            var response = executeRequest(url);
 
 
-            var signature = new UploadSignature( response );
+            var signature = new UploadSignature(response);
             return signature;
         }
 
@@ -438,12 +455,16 @@ namespace com.vzaar.api
 
         public Int64 processVideo ( VideoProcessQuery query )
         {
-            var url = apiUrl + "/api/videos";
+            var url = apiUrl + "/api/v1.1/videos";
             var data = "<vzaar-api><video>";
             if (query.replaceId != "")
                 data += "<replace_id>" + query.replaceId + "</replace_id>";
             data += "<guid>" + query.guid + "</guid><title>" + HttpUtility.HtmlEncode(query.title) + "</title><description>" + HttpUtility.HtmlEncode(query.description) + "</description><labels>";
             data += HttpUtility.HtmlEncode(String.Join( ",", query.labels )) + "</labels><profile>" + (int)query.profile + "</profile>";
+            if (query.chunks > 0)
+            {
+                data += "<chunks>" + query.chunks + "</chunks>";
+            }
             if (query.transcode)
                 data += "<transcoding>true</transcoding>";
             data += "</video> </vzaar-api>";

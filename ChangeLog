@@ -1,3 +1,7 @@
+[1.1.4] 2016-04-06 EV <evi@vzaar.com>
+
+	* update to support multipart upload
+	
 [1.1.3] 2016-03-09 EV <evi@vzaar.com>
 
 	* update to support pagging
