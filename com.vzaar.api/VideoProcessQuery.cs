@@ -11,5 +11,6 @@ namespace com.vzaar.api
         public VideoProfile profile = VideoProfile.ORIGINAL;
         public bool transcode = false;
         public string replaceId = String.Empty;
+        public int chunks = 0;
     }
 }
