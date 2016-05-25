@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Web;
@@ -27,7 +26,9 @@ namespace com.vzaar.api
         public bool enableFlashSupport = false;
 
         public string apiUrl = "https://vzaar.com";
-
+        
+        public const String uploader = "net-1.2.0";
+        public const String version = "1.2.0";
         public Vzaar ()
         {
         }
@@ -264,195 +265,245 @@ namespace com.vzaar.api
 
             return result;
         }
-
-        public UploadSignature getUploadSignature ()
-        {
-            return getUploadSignature(false);
-        }
-
-        public UploadSignature getUploadSignature(bool multipart)
+        public UploadSignature getUploadSignature(UploadSignatureQuery query)
         {
             var url = apiUrl + "/api/v1.1/videos/signature";
+            var oAuth = new OAuthBase();
+            if (String.IsNullOrEmpty(query.path) && String.IsNullOrEmpty(query.url))
+            {
+                throw new ArgumentException("path or url must be provided");
+            }
+
+            if (!String.IsNullOrEmpty(query.path))
+            {
+                url += "?path=" + oAuth.UrlEncode(query.path);
+                if (!String.IsNullOrEmpty(query.filename))
+                {
+                    url += "&filename=" + oAuth.UrlEncode(query.filename);
+                }
+                if (query.fileSize > 0)
+                {
+                    url += "&filesize=" + query.fileSize;
+                }
+            }
+            else
+            {
+                url += "?url=" + oAuth.UrlEncode(query.url);
+            }
 
             if (enableFlashSupport)
             {
-                url += "?flash_request=true";
+                url += "&flash_request=true";
+            }
+            if (!String.IsNullOrEmpty(query.redirectUrl))
+            {
+                url += "&success_action_redirect=" + oAuth.UrlEncode(query.redirectUrl);
             }
 
-            if (multipart)
+            if (query.multipart)
             {
-                if (enableFlashSupport)
-                {
-                    url += "&multipart=true";
-                }
-                else
-                {
-                    url += "?multipart=true";
-                }
+                url += "&multipart=true";
+                url += "&uploader=" + uploader;
             }
+
+            UploadSignature signature = null;
 
             var response = executeRequest(url);
+            signature = new UploadSignature(response);
 
-
-            var signature = new UploadSignature(response);
             return signature;
         }
 
-        public UploadSignature getUploadSignature ( string redirectUrl )
+        /// <summary>
+        /// Upload video from local drive to vzaar upload host
+        /// </summary>
+        /// <param name="path">Path of the video file to be uploaded</param>
+        /// <returns>GUID of the file uploaded</returns>
+        public string uploadVideo(string path)
         {
-            var url = apiUrl + "/api/videos/signature";
-
-            var oAuth = new OAuthBase();
-            redirectUrl = oAuth.UrlEncode( redirectUrl );
-
-            if (enableFlashSupport)
-            {
-                url += "?flash_request=true";
-            }
-
-            if (redirectUrl != String.Empty)
-            {
-                if (!enableFlashSupport)
-                {
-                    url += "?success_action_redirect=" + redirectUrl;
-                }
-                else
-                {
-                    url += "&success_action_redirect=" + redirectUrl;
-                }
-            }
-
-            var response = executeRequest( url );
-
-            var signature = new UploadSignature( response );
-            return signature;
-        }
-
-        public string uploadVideo ( string path )
-        {
+            var query = new UploadSignatureQuery();
+            query.path = path;
+            var fileInfo = new FileInfo(path);
+            query.fileSize = fileInfo.Length;
+            query.filename = fileInfo.Name;
+            query.multipart = true;
             var signature = new UploadSignature();
 
-            signature = getUploadSignature();
+            signature = getUploadSignature(query);
+            if (String.IsNullOrEmpty(signature.chunkSize))
+            {
+                return simpleUpload(path, signature);
+            }
 
-            var url = "https://" + signature.bucket + ".s3.amazonaws.com/";
-
+            return multipartUpload(path, signature);  
+        }
+        private string simpleUpload(string path, UploadSignature signature)
+        {
             var parameters = new NameValueCollection
                                  {
-                                     {"key", signature.key},
                                      {"AWSAccessKeyId", signature.accessKeyId},
-                                     {"acl", signature.acl},
-                                     {"policy", signature.policy},
                                      {"signature", signature.signature},
-                                     {"success_action_status", "201"}
+                                     {"acl", signature.acl},
+                                     {"bucket", signature.bucket},
+                                     {"policy", signature.policy},
+                                     {"success_action_status", "201"},
+                                     {"key", signature.key},
+                                     {"chunks", "0"},
+                                     {"chunk", "0"},
+                                     {"x-amz-meta-uploader", uploader}
                                  };
 
-            var response = HttpUploadFile( url, path, "file", "application/octet-stream", parameters );
-
-            return signature.guid;
+            var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            var guid = HttpUploadFile(signature.uplodHostname, parameters, fileStream, path);
+            fileStream.Close();
+            return guid;
         }
 
-        private string HttpUploadFile ( string url, string file, string paramName, string contentType, NameValueCollection nvc )
+        /// <summary>
+        /// Upload video from local drive in multiple chunks
+        /// </summary>
+        /// <param name="path">Path of the video file to be uploaded</param>
+        /// <param name="signature">Object of type <see cref="UploadSignature"/></param>
+        /// <returns> GUID string of thhe file uploaded</returns>
+        private string multipartUpload(string path, UploadSignature signature)
         {
-            var boundary = "---------------------------" + DateTime.Now.Ticks.ToString( "x" );
-            var boundarybytes = System.Text.Encoding.ASCII.GetBytes( "\r\n--" + boundary + "\r\n" );
+            string guid = null;
+            var fileInfo = new FileInfo(path);
+            long filesize = fileInfo.Length;
+            int chunks = (int)Math.Ceiling((double)filesize / chunkSyzeInBytes(signature.chunkSize));
+            var buffer = new byte[chunkSyzeInBytes("5mb")];
+            int bytesRead;
+            var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            int chunk = 0;
+            while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
+            {
+                MemoryStream ms = new MemoryStream(buffer, 0, bytesRead);
 
-            var wr = (HttpWebRequest)WebRequest.Create( url );
+                string key = signature.key.Replace("${filename}", fileInfo.Name) + "." + chunk;
+                var parameters = new NameValueCollection
+                                 {
+                                     {"AWSAccessKeyId", signature.accessKeyId},
+                                     {"signature", signature.signature},
+                                     {"acl", signature.acl},
+                                     {"bucket", signature.bucket},
+                                     {"policy", signature.policy},
+                                     {"success_action_status", "201"},
+                                     {"key", key},
+                                     {"chunks", chunks.ToString()},
+                                     {"chunk", chunk.ToString()},
+                                     {"x-amz-meta-uploader", uploader}
+                                 };
+
+                guid = HttpUploadFile(signature.uplodHostname, parameters, ms, path);
+                chunk++;
+                ms.Close();
+                ms.Dispose();
+            }
+            fileStream.Close();
+
+            return guid;
+        }
+        private string HttpUploadFile(string url, NameValueCollection nvc, Stream stream, string file)
+        {
+            var boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
+            var boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
+
+            var wr = (HttpWebRequest)WebRequest.Create(url);
             wr.ContentType = "multipart/form-data; boundary=" + boundary;
             wr.Method = "POST";
             wr.KeepAlive = true;
             wr.Credentials = CredentialCache.DefaultCredentials;
 
-            //todo find out if necessary
-            wr.Headers.Add( "Accept-Language", "en-gb,en;q=0.5" );
-            wr.Headers.Add( "Accept-Encoding", "gzip,deflate" );
-            wr.Headers.Add( "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7" );
+            wr.Headers.Add("Accept-Language", "en-gb,en;q=0.5");
+            wr.Headers.Add("Accept-Encoding", "gzip,deflate");
+            wr.Headers.Add("Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7");
             wr.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
             wr.AllowWriteStreamBuffering = false;
             wr.SendChunked = false;
             //wr.Timeout = 1000000000;
-            //request.ContentType = contentType;
 
             const string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
-            var header = string.Format( headerTemplate, paramName, file, contentType );
-            var headerbytes = System.Text.Encoding.UTF8.GetBytes( header );
-
-            var fileStream = new FileStream( file, FileMode.Open, FileAccess.Read );
+            var header = string.Format(headerTemplate, "file", file, "application/octet-stream");
+            var headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
 
             const string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
 
             var nvcByteCount = 0;
             foreach (string key in nvc.Keys)
             {
-                var formitem = string.Format( formdataTemplate, key, nvc[key] );
-                var formitembytes = System.Text.Encoding.UTF8.GetBytes( formitem );
+                var formitem = string.Format(formdataTemplate, key, nvc[key]);
+                var formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
                 nvcByteCount += formitembytes.Length;
             }
-            var trailer = System.Text.Encoding.ASCII.GetBytes( "\r\n--" + boundary + "--\r\n" );
 
-            wr.ContentLength = fileStream.Length + headerbytes.Length + ((nvc.Count + 1) * boundarybytes.Length) + nvcByteCount + trailer.Length;
+            var trailer = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
 
+            wr.ContentLength = stream.Length + headerbytes.Length + ((nvc.Count + 1) * boundarybytes.Length) + nvcByteCount + trailer.Length;
 
             var rs = wr.GetRequestStream();
 
 
             foreach (string key in nvc.Keys)
             {
-                rs.Write( boundarybytes, 0, boundarybytes.Length );
-                var formitem = string.Format( formdataTemplate, key, nvc[key] );
-                var formitembytes = System.Text.Encoding.UTF8.GetBytes( formitem );
-                rs.Write( formitembytes, 0, formitembytes.Length );
+                rs.Write(boundarybytes, 0, boundarybytes.Length);
+                var formitem = string.Format(formdataTemplate, key, nvc[key]);
+                var formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
+                rs.Write(formitembytes, 0, formitembytes.Length);
             }
-            rs.Write( boundarybytes, 0, boundarybytes.Length );
-
-            rs.Write( headerbytes, 0, headerbytes.Length );
+            rs.Write(boundarybytes, 0, boundarybytes.Length);
+            rs.Write(headerbytes, 0, headerbytes.Length);
 
             var buffer = new byte[bufferSize];
             int bytesRead;
             var bytesUploaded = 0;
-            while ((bytesRead = fileStream.Read( buffer, 0, buffer.Length )) != 0)
+            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
             {
-                rs.Write( buffer, 0, bytesRead );
+                rs.Write(buffer, 0, bytesRead);
 
                 //raise event with upload progress
                 bytesUploaded += bytesRead;
                 var eventArgs = new UploadProgressEventArgs
                 {
                     bytesUploaded = bytesUploaded,
-                    bytesTotal = fileStream.Length
+                    bytesTotal = stream.Length
                 };
 
-                ProgressEvent( this, eventArgs );
+                ProgressEvent(this, eventArgs);
 
             }
-            fileStream.Close();
 
-            rs.Write( trailer, 0, trailer.Length );
+            rs.Write(trailer, 0, trailer.Length);
             rs.Close();
 
             HttpWebResponse wresp = null;
-            var response = "";
+            var rawResponse = "";
 
             try
             {
                 wresp = (HttpWebResponse)wr.GetResponse();
                 var stream2 = wresp.GetResponseStream();
-                var reader2 = new StreamReader( stream2 );
-                response = reader2.ReadToEnd();
+                var reader2 = new StreamReader(stream2);
+                rawResponse = reader2.ReadToEnd();
 
             }
             catch (Exception ex)
             {
-                Console.Write( ex.ToString() );
                 if (wresp != null)
                 {
                     wresp.Close();
                 }
             }
 
-            return response;
+            var guid = "";
+            if (rawResponse.Length > 0)
+            {
+                var doc = new XmlDocument();
+                doc.LoadXml(rawResponse);
+                string[] keyParts = doc.SelectSingleNode("//Key").InnerText.Split('/');
+                guid = keyParts[keyParts.Length - 2];
+            }
+            return guid;
         }
-
         public Int64 processVideo ( VideoProcessQuery query )
         {
             var url = apiUrl + "/api/v1.1/videos";
@@ -592,15 +643,13 @@ namespace com.vzaar.api
 			try
 			{
 				response = request.GetResponse();
-				Debug.WriteLine(((HttpWebResponse)response).StatusDescription);
 				var reader = new StreamReader(response.GetResponseStream());
 				rawResponse = reader.ReadToEnd();
 
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex.ToString());
-				throw;
+			    result = null;
 			}
 			if (rawResponse.Length > 0)
 			{
@@ -615,9 +664,13 @@ namespace com.vzaar.api
         {
             var url = apiUrl + "/api/upload/link.xml";
 
+            var signatureQuery = new UploadSignatureQuery();
+            signatureQuery.url = query.url;
+            signatureQuery.multipart = true;
+
             var signature = new UploadSignature();
 
-            signature = getUploadSignature();
+            signature = getUploadSignature(signatureQuery);
 
             var data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                        "<vzaar-api>" +
@@ -704,18 +757,24 @@ namespace com.vzaar.api
             try
             {
                 response = request.GetResponse();
-                Debug.WriteLine( ((HttpWebResponse)response).StatusDescription );
                 var reader = new StreamReader( response.GetResponseStream() );
                 rawResponse = reader.ReadToEnd();
 
             }
             catch (Exception ex)
             {
-                Debug.WriteLine( ex.ToString() );
-                throw;
+                throw ex;
             }
 
             return rawResponse;
+        }
+        private long chunkSyzeInBytes(String str)
+        {
+            int index = str.ToLower().IndexOf("mb");
+            int number;
+            int.TryParse(str.Substring(0, index), out number);
+
+            return (long)(number * Math.Pow(1024, 2));
         }
     }
 }
