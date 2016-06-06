@@ -380,19 +380,7 @@ namespace com.vzaar.api.OAuth
         {
             // Default implementation of UNIX time of the current UTC time
             TimeSpan ts = DateTime.UtcNow.Subtract((new DateTime(1970, 1, 1, 0, 0, 0, 0)));
-            string timeStamp = ts.TotalSeconds.ToString();
-
-            // Some timestamps contain a ',' instead of '.'
-            if (timeStamp.IndexOf(".") > -1)
-            {
-                timeStamp = timeStamp.Substring(0, timeStamp.IndexOf("."));
-            }
-            else
-            {
-                timeStamp = timeStamp.Substring(0, timeStamp.IndexOf(","));
-            }
-
-            return timeStamp;
+            return ((int)ts.TotalSeconds).ToString();
         }
 
         /// <summary>
