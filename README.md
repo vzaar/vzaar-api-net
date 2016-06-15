@@ -79,8 +79,29 @@ Where _VZAAR_VIDEO_ID_ is unique vzaar video ID assigned to a video after its pr
 >In some cases you might need to not perform actual uploading from API but to use some third-party uploaders, like S3_Upload widget, or any other, so you would need to get only upload signature for it, so now you can have it as UploadSignature object, as XML string, as XmlDocument or as JSON string:
 
 ```csharp
-var jsonStringSignature = api.getUploadSignature().toJson();
+var api = new Vzaar("user", "token");
+
+var query = new UploadSignatureQuery();
+query.path = "/path/to/file/video.mp4";
+query.filename = "video.mp4";
+query.fileSize = 848484;
+query.multipart = true;
+
+var signature = api.getUploadSignature(query);
 ```
+
+UploadSignatureQuery has the following parameters:
+
+- _redirectUrl_ - post upload redirection URL
+- _multipart_ - true|false, enables or disables multipart upload support
+- _path_ - local path of the video file to be uploaded
+- _url_ - remote path of the video file to be uploaded
+- _filename_ - basename of file being uploaded
+- _filesize_ - size in bytes of file being uploaded
+
+In UploadSignatureQuery either _path_ or _url_ must be provided. Use `path` to upload from your local filesystem. Use `url` to upload from a remote location via http. 
+
+Both _filesize_ and _filename_ are mandatory in order to initiate the correct S3 multipart upload, although no exception will be raised from the API if either is missing. In the case of either of these parameters being missing, video processing will be significantly slower, especially for large files.
 
 ####Uploading video
 
@@ -104,23 +125,25 @@ api.bufferSize = 262144; //256 kb
 var processQuery = new VideoProcessQuery
 {
 	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
-	title = "My awesome video",
-	description = "The story about how easy to build awesome apps with vzaar API",
+	title = "My video",
+	description = "The story about how to upload video using the vzaar API",
+	chunks = 25,
 	profile = VideoProfile.ORIGINAL,
 	labels = new string[]{"api","tutorials"}
 };
+
 var x = api.processVideo(processQuery);
 ```
 
-If you want to replace existing video with some newly uploaded, you can call _Process Video_ with adding _replaceId_ parameter equal to vzaar video ID of the video that needs to be replaced.
+If you want to replace an existing video with a new video (i.e. keep the same `video_id`), you can call _Process Video_ with adding _replaceId_ parameter equal to vzaar video ID of the video that needs to be replaced.
 
 ```csharp
 var processQuery = new VideoProcessQuery
 {
 	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
 	replaceId = 12345678, //vzaar Video ID of the video you want to replace
-	title = "My awesome video",
-	description = "The story about how easy to build awesome apps with vzaar API",
+	title = "My video",
+	description = "The story about how to upload video using the vzaar API",
 	profile = VideoProfile.ORIGINAL,
 	labels = new string[]{"api","tutorials"}
 };
@@ -134,8 +157,8 @@ var x = api.processVideo(processQuery);
 ```csharp
 var editQuery = new VideoEditQuery
 {
-	title = "My REALLY awesome video",
-	description = "The story about how easy to build awesome apps with vzaar API",
+	title = "My new video",
+	description = "The story about how to upload video using the vzaar API",
 	markAsPrivate = true
 };
 var x = api.editVideo(editQuery);
