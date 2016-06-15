@@ -1,3 +1,7 @@
+[1.2.0] 2016-05-25 EV <evi@vzaar.com>
+
+	* update to support chunk upload
+	
 [1.1.4] 2016-04-06 EV <evi@vzaar.com>
 
 	* update to support multipart upload
