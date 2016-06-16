@@ -1,3 +1,7 @@
+[1.2.1] 2016-06-15 EV <evi@vzaar.com>
+
+	* fixed timestamp generation
+	
 [1.2.0] 2016-05-25 EV <evi@vzaar.com>
 
 	* update to support chunk upload
