@@ -27,8 +27,8 @@ namespace com.vzaar.api
 
         public string apiUrl = "https://vzaar.com";
         
-        public const String uploader = "net-1.2.0";
-        public const String version = "1.2.0";
+        public const String uploader = "net-1.2.1";
+        public const String version = "1.2.1";
         public Vzaar ()
         {
         }
