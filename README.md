@@ -1,181 +1,56 @@
-vzaar API .NET client
----
-Lighter and faster vzaar API client for .NET and Mono developers. Documentation provided below is valid for the library version 2.0.5214 and above.
+# vzaar API
 
----
+![vzaar Logo](https://raw.github.com/vzaar/vzaar-api-php/master/vzaar.png)
 
->vzaar is the go to video hosting platform for business. Affordable, customizable and secure. Leverage the power of online video and enable commerce with vzaar.
+By [vzaar](http://vzaar.com)
 
-----
+vzaar's .NET client for interacting with version 2 of the [vzaar
+API](https://vzaar.readme.io/docs).
 
-###Using the library
+## Requirements
 
+The library code compiles on:
+- Mono 3.6.2 / .NET 45
+- .NET Core 1.0 / .NET Standard >=1.3
 
-To start, make sure you have included com.vzaar.api.dll into your Project References.
+## Backwards compatability
 
-```csharp
-using com.vzaar.api;
+Versions 1 and 2 of the vzaar API are incompatable with each other. The same applies to
+the API SDKs. Some functionality available in the version 1 SDK has been deprecated in
+version 2 and will not be implemented. The version 2 API also has a different
+authentication mechanism so your existing API key will not work with version 2 SDKs.
+
+To ease migration to the version 2 SDK, it is possible to use both versions without any
+conflicts.
+
 ```
-Now you can create your vzaar client instance:
-
-```csharp
-var api = new Vzaar("VZAAR_USERNAME", "VZAAR_TOKEN");
-```
-In order to use vzaar API, you need to have a valid user name and API token that you can get from your vzaar dashboard at [http://vzaar.com/settings/third_party](http://vzaar.com/settings/third_party).
-
-The very next thing you would want to do is to check if your account actually works and operational and you can do it by simple calling _whoAmI()_:
-
-```csharp
-Debug.WriteLine(api.whoAmI());
-```
-
-If it returns you your vzaar username, - we are good to go.
-
-####User Details
-
->This API call returns the user's public details along with it's relevant metadata. It also contains vzaar Account ID that you can use in _api.getAccountDetails_ call.
-
-```csharp
-var details = api.getUserDetails(VZAAR_USERNAME);
+Vzaar       # <= this is version 1
+VzaarApi    # <= this is version 2
 ```
 
-Where _VZAAR_USERNAME_ is the vzaar username. Result of this call will be an object of [UserDetails](com.vzaar.api/UserDetails.cs) type.
+## Usage
 
-####Account Details
+Check the `Examples` directory for usage examples. You can configure your `client_id` and
+`auth_token` in `Program.cs`:
 
->This API call returns the details and rights for each vzaar subscription account type along with it's relevant metadata. This will show the details of the packages available here: [http://vzaar.com/pricing](http://vzaar.com/pricing)
-
-```csharp
-var details = api.getAccountDetails(VZAAR_ACCOUNT_ID);
 ```
 
-Where _VZAAR_ACCOUNT_ID_ is the unique account id assigned by vzaar.
-
-Result of this call will be an object of [AccountDetails](com.vzaar.api/AccountDetails.cs) type.
-
-####Video List
-
->This API call returns a list of the user's active videos along with it's relevant metadata. 20 videos are returned by default but this is customizable.
-
-```csharp
-var query = new VideoListQuery;
-query.count = 10;
-query.page = 1;
-var list = api.getVideoList(query);
+Client.client_id = "id";
+Client.auth_token = "token";
 ```
 
-####Video Details
-
->This API call returns metadata about selected video, like its dimensions, thumbnail information, author, duration, play count and so on.
-
-```csharp
-api.getVideoDetails(VZAAR_VIDEO_ID);
-```
-
-Where _VZAAR_VIDEO_ID_ is unique vzaar video ID assigned to a video after its processing.
-
-####Upload Signature
-
->In some cases you might need to not perform actual uploading from API but to use some third-party uploaders, like S3_Upload widget, or any other, so you would need to get only upload signature for it, so now you can have it as UploadSignature object, as XML string, as XmlDocument or as JSON string:
-
-```csharp
-var api = new Vzaar("user", "token");
-
-var query = new UploadSignatureQuery();
-query.path = "/path/to/file/video.mp4";
-query.filename = "video.mp4";
-query.fileSize = 848484;
-query.multipart = true;
-
-var signature = api.getUploadSignature(query);
-```
-
-UploadSignatureQuery has the following parameters:
-
-- _redirectUrl_ - post upload redirection URL
-- _multipart_ - true|false, enables or disables multipart upload support
-- _path_ - local path of the video file to be uploaded
-- _url_ - remote path of the video file to be uploaded
-- _filename_ - basename of file being uploaded
-- _filesize_ - size in bytes of file being uploaded
-
-In UploadSignatureQuery either _path_ or _url_ must be provided. Use `path` to upload from your local filesystem. Use `url` to upload from a remote location via http. 
-
-Both _filesize_ and _filename_ are mandatory in order to initiate the correct S3 multipart upload, although no exception will be raised from the API if either is missing. In the case of either of these parameters being missing, video processing will be significantly slower, especially for large files.
-
-####Uploading video
-
->Upload video from local drive directly to Amazon S3 bucket. Use this method when you build desktop apps or when you upload videos to vzaar directly from your server.
-
-```csharp
-var guid = api.uploadVideo("PATH/TO/SOME_FILE");
-```
-
-Keep in mind that file uploaded to a Amazon S3 storage in chunks of 128Kb, you can adjust this chunk size this way:
-
-```csharp
-api.bufferSize = 262144; //256 kb
-```
-
-####Processing video
-
->This API call tells the vzaar system to process a newly uploaded video. This will encode it if necessary and then provide a vzaar video ID back.
-
-```csharp
-var processQuery = new VideoProcessQuery
-{
-	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
-	title = "My video",
-	description = "The story about how to upload video using the vzaar API",
-	chunks = 25,
-	profile = VideoProfile.ORIGINAL,
-	labels = new string[]{"api","tutorials"}
-};
-
-var x = api.processVideo(processQuery);
-```
-
-If you want to replace an existing video with a new video (i.e. keep the same `video_id`), you can call _Process Video_ with adding _replaceId_ parameter equal to vzaar video ID of the video that needs to be replaced.
-
-```csharp
-var processQuery = new VideoProcessQuery
-{
-	guid = "vzcf7af7bc5a734c30a46ca3911e7f3458",
-	replaceId = 12345678, //vzaar Video ID of the video you want to replace
-	title = "My video",
-	description = "The story about how to upload video using the vzaar API",
-	profile = VideoProfile.ORIGINAL,
-	labels = new string[]{"api","tutorials"}
-};
-var x = api.processVideo(processQuery);
-```
-
-####Editing video
-
->This API call allows a user to edit or change details about a video in the system.
-
-```csharp
-var editQuery = new VideoEditQuery
-{
-	title = "My new video",
-	description = "The story about how to upload video using the vzaar API",
-	markAsPrivate = true
-};
-var x = api.editVideo(editQuery);
-```
-
-Notice _markAsPrivate_ property in _VideoEditQuery_ variable, you can pass there _true_ or _false_, and this property marks the video as private (if true) or public (if false).
-
-####Deleting video
->This API call allows you to delete a video from your account. If deletion was successful it will return you _true_ otherwise _false_.
-
-```csharp
-var result = api.deleteVideo(VZAAR_VIDEO_ID);
-```
-
-Where VZAAR_VIDEO_ID is unique vzaar video ID assigned to a video after its processing.
+Usage instructions and examples are available on [vzaar's documentation
+site](https://vzaar.readme.io).
 
 
-### License
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
+## License
 
 Released under the [MIT License](http://www.opensource.org/licenses/MIT).
