@@ -217,7 +217,7 @@ namespace tests
 			recipe ["multipass"] = null;
 
 			Assert.IsFalse(recipe.record.Data.TryGetValue("multipass",out token));
-			Assert.IsNull ((bool?)recipe["multipass"]);
+			Assert.IsFalse ((bool)recipe["multipass"]);
 
 			Assert.AreEqual (0, recipe.record.Parameters.Count);
 			Assert.IsFalse(recipe.record.Parameters.TryGetValue("multipass",out value));

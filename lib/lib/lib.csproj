@@ -56,6 +56,9 @@
     <Compile Include="src\Resources\TypeDef\UploadSignatureType.cs" />
     <Compile Include="src\Resources\TypeDef\VideoCategoryType.cs" />
     <Compile Include="src\Resources\TypeDef\VideoType.cs" />
+    <Compile Include="src\Playlist.cs" />
+    <Compile Include="src\PlaylistsList.cs" />
+    <Compile Include="src\Resources\TypeDef\PlaylistType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

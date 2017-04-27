@@ -60,7 +60,11 @@ namespace Examples
 				//LinkUploads.UsingLinkUploadParameters (Client.client_id, Client.auth_token, url);
 				//LinkUploads.UsingLinkUploadUrlString (Client.client_id, Client.auth_token, url);
 
+			Console.WriteLine ();
+			Console.WriteLine("##Playlists##");
 
+				//Playlists.UsingPlaylist (Client.client_id, Client.auth_token, categoryId);
+				//Playlists.ReadingPlaylistsList (Client.client_id, Client.auth_token);
 		}
 	}
 }

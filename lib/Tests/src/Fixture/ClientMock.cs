@@ -28,7 +28,9 @@ namespace tests
 		Signature,
 		SignatureFailed,
 		VideosList,
-		UploadFailed
+		UploadFailed,
+		Playlist,
+		PlaylistsList
 	}
 		
 	internal class ClientMock : Client
@@ -146,6 +148,15 @@ namespace tests
 				content = videosList_base;
 				if (msg.RequestUri.Query != "")
 					content = videosList_query;
+				break;
+			case MockResponse.Playlist:
+				content = playlist;
+				break;
+			case MockResponse.PlaylistsList:
+				content = playlistsList_base;
+				if (msg.RequestUri.Query != "")
+					content = playlistsList_query;
+				break;
 				break;
 			}
 				
@@ -344,7 +355,7 @@ namespace tests
 
 		string missing_id =  @"{'data':{ 'name': 'Ingest recipe 1'}}";
 
-		string recipe =  @"{'data':{'id':1, 'name': 'Ingest recipe 1'}}";
+		string recipe =  @"{'data':{'id':1, 'name': 'Ingest recipe 1', 'multipass': false}}";
 
 		string recipesList_base = @"{
                 ""data"": [
@@ -916,6 +927,97 @@ namespace tests
 				    }
 				  }
 				}";
+
+		string playlist = @"{
+			  ""data"": {
+			    ""id"": 1,
+			    ""category_id"": 42,
+			    ""title"": ""test"",
+			    ""sort_order"": ""desc"",
+			    ""sort_by"": ""created_at"",
+			    ""max_vids"": 43,
+			    ""position"": ""right"",
+			    ""private"": false,
+			    ""dimensions"": ""768x340"",
+			    ""autoplay"": false,
+			    ""continuous_play"": true,
+			    ""created_at"": ""2017-03-20T11:30:36.932Z"",
+			    ""updated_at"": ""2017-03-20T11:30:36.932Z""
+			  }
+			}";
+
+		string playlistsList_base = @"{
+			  ""data"": [
+			    {
+			      ""id"": 1,
+					""title"": ""drj-playlist-cat-user-test"",
+					""sort_order"": ""asc"",
+			      ""sort_by"": ""created_at"",
+			      ""max_vids"": 30,
+			      ""position"": ""left"",
+			      ""private"": false,
+			      ""dimensions"": ""auto"",
+			      ""autoplay"": false,
+			      ""continuous_play"": false,
+			      ""category_id"": 42,
+			      ""created_at"": ""2016-11-09T11:01:38.000Z"",
+			      ""updated_at"": ""2016-11-25T13:30:41.000Z""
+			    },
+				{
+			      ""id"": 2,
+					  ""title"": ""drj-playlist-cat-user-test"",
+					  ""sort_order"": ""asc"",
+			      ""sort_by"": ""created_at"",
+			      ""max_vids"": 30,
+			      ""position"": ""left"",
+			      ""private"": false,
+			      ""dimensions"": ""auto"",
+			      ""autoplay"": false,
+			      ""continuous_play"": false,
+			      ""category_id"": 42,
+			      ""created_at"": ""2016-11-09T11:01:38.000Z"",
+			      ""updated_at"": ""2016-11-25T13:30:41.000Z""
+			    }
+			  ],
+			  ""meta"": {
+			    ""total_count"": 2,
+			    ""links"": {
+			      ""first"": ""http://api.vzaar.com/api/v2/feeds/playlists?page=1&per_page=1"",
+			      ""next"": null,
+			      ""previous"": null,
+			      ""last"": ""http://api.vzaar.com/api/v2/feeds/playlists?page=2&per_page=1""
+			    }
+			  }
+			 }";
+
+		string playlistsList_query = @"{
+			  ""data"": [
+			    {
+			      ""id"": 1,
+					  ""title"": ""drj-playlist-cat-user-test"",
+					  ""sort_order"": ""asc"",
+			      ""sort_by"": ""created_at"",
+			      ""max_vids"": 30,
+			      ""position"": ""left"",
+			      ""private"": false,
+			      ""dimensions"": ""auto"",
+			      ""autoplay"": false,
+			      ""continuous_play"": false,
+			      ""category_id"": 42,
+			      ""created_at"": ""2016-11-09T11:01:38.000Z"",
+			      ""updated_at"": ""2016-11-25T13:30:41.000Z""
+			    }
+			  ],
+			  ""meta"": {
+			    ""total_count"": 2,
+			    ""links"": {
+			      ""first"": ""http://api.vzaar.com/api/v2/feeds/playlists?page=1&per_page=1"",
+			      ""next"": null,
+			      ""previous"": null,
+			      ""last"": ""http://api.vzaar.com/api/v2/feeds/playlists?page=2&per_page=1""
+			    }
+			  }
+			}";
 
 	}//end class
 }//end namespace

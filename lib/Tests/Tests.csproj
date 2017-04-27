@@ -57,6 +57,8 @@
     <Compile Include="src\VideosListTest.cs" />
     <Compile Include="src\Fixture\ClientMock.cs" />
     <Compile Include="src\Fixture\S3ClientMock.cs" />
+    <Compile Include="src\PlaylistTest.cs" />
+    <Compile Include="src\PlaylistsListTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\lib.csproj">

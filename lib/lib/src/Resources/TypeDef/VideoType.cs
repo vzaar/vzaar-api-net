@@ -19,7 +19,7 @@ namespace VzaarApi
 		/*
 		 * not possible to define the field variable
 		 * 'private' is restricted key-word in C#
-		 * access the property useing indexer 
+		 * access the property using indexer 
 		 * 
 		 * example: <object_name>["private"]
 		 * 
