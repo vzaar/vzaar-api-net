@@ -42,7 +42,7 @@ namespace VzaarApi
 				tokens.Add ("uploader", Client.UPLOADER + Client.VERSION);
 			}
 
-			string path = "/single";
+			string path = "/single/2";
 
 			record.Create (tokens, path);
 
@@ -60,7 +60,7 @@ namespace VzaarApi
 				tokens.Add ("uploader", Client.UPLOADER + Client.VERSION);
 			}
 
-			string path = "/multipart";
+			string path = "/multipart/2";
 
 			record.Create (tokens, path);
 		}

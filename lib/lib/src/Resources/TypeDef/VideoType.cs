@@ -39,6 +39,7 @@ namespace VzaarApi
 		public List<VideoCategoryType> categories;
 		public List<RenditionType> renditions;
 		public List<LegacyRenditionType> legacy_renditions;
+		public List<SubtitleType> subtitles;
 
 	}
 

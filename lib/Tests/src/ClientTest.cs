@@ -21,6 +21,15 @@ namespace tests
 			Client.version = "vX";
 		}
 
+		[TearDown]
+		protected void Dispose() {
+			Client.client_id = "client_static";
+			Client.auth_token = "token_static";
+			Client.urlAuth = true;
+			Client.url = "https://example.static.com";
+			Client.version = "v2";
+		}
+
 		[Test ()]
 		public void GetClient ()
 		{
@@ -150,6 +159,20 @@ namespace tests
 			try {
 
 				response.StatusCode = HttpStatusCode.NoContent;
+				client.ValidateHttpResponse (response);
+
+			} catch {
+
+				//the StatusCode should NOT throw
+				//the assert has to fail
+				bool assert = true;
+				Assert.IsFalse (assert);
+
+			}
+
+			try {
+
+				response.StatusCode = HttpStatusCode.Accepted;
 				client.ValidateHttpResponse (response);
 
 			} catch {
@@ -475,6 +498,47 @@ namespace tests
 			}
 
 		}
+
+		[Test()]
+		public void ValidateHttpResponseThrows9() {
+
+			var client = new Client ();
+
+			HttpResponseMessage response = new HttpResponseMessage ();
+			response.Content = new StringContent ("");
+
+			string expected = "StatusCode: "+HttpStatusCode.UpgradeRequired;
+
+			try {
+
+				response.StatusCode = HttpStatusCode.UpgradeRequired;
+				client.ValidateHttpResponse(response);
+
+				//the StatusCode throws
+				//the assert has to fail
+				bool assert = true;
+				Assert.IsFalse (assert);
+
+			} catch(VzaarApiException ve) {
+
+				StringAssert.Contains (expected,ve.Message);
+
+			} catch (Exception e){
+
+				if (e is AggregateException) {
+					AggregateException ae = (AggregateException)e;
+
+					var flatten = ae.Flatten ();
+
+					foreach (var fe in flatten.InnerExceptions) {
+						if (fe is VzaarApiException)
+							StringAssert.Contains (expected, fe.Message);
+					}
+				}
+			}
+
+		}
+
 			
 	}
 }

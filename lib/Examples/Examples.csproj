@@ -41,6 +41,8 @@
     <Compile Include="Examples.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="src\Playlists.cs" />
+    <Compile Include="src\Subtitles.cs" />
+    <Compile Include="src\ImageFrame.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
