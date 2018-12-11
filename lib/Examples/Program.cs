@@ -9,8 +9,8 @@ namespace Examples
 		public static void Main (string[] args)
 		{
 
-			Client.client_id="han-apple-hammer";
-			Client.auth_token = "d4fdeSF53F3gfdsazlW9";
+			Client.client_id="<client_id>";
+			Client.auth_token = "<auth_token>";
 
 			Client.url = "https://api.vzaar.com/api/";
 			//Client.urlAuth = true; 
