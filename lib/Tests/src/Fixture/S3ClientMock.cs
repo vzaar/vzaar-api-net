@@ -45,7 +45,7 @@ namespace tests
 
 			response.Content = new StringContent("");
 
-			if (fields.ContainsKey ("Signature") == false)
+			if (fields.ContainsKey ("x-amz-signature") == false)
 				response.StatusCode = HttpStatusCode.Forbidden;
 
 			if (fields.ContainsKey ("key")) {

@@ -8,6 +8,8 @@ namespace VzaarApi
 	public class Video
 	{
 		internal Record record;
+		internal Subtitle subtitle;
+		internal SubtitlesList subtitlesList;
 
 		//constructor
 		public Video ()
@@ -181,6 +183,68 @@ namespace VzaarApi
 
 			record.Delete ();
 
+		}
+
+		//SubtitlesList get
+		public virtual SubtitlesList Subtitles(){
+
+			subtitlesList = new SubtitlesList((long)record["id"], record.RecordClient);
+			return subtitlesList;
+		} 
+
+		//Subtitle create
+		public virtual Subtitle SubtitleCreate(Dictionary<string,object> tokens){
+
+			subtitle = new Subtitle ((long)record["id"],record.RecordClient);
+			subtitle.Create(tokens);
+			
+			//refresh video object
+			record.Read ((long)record["id"]);
+
+			return subtitle;
+
+		}
+
+		//Subtitle update
+		public virtual Subtitle SubtitleUpdate(long subtitleId, Dictionary<string,object> tokens){
+
+			subtitle = new Subtitle ((long)record["id"], record.RecordClient, subtitleId);
+			subtitle.Save(tokens);
+
+			//refresh video object
+			record.Read ((long)record["id"]);
+
+			return subtitle;
+			
+		} 
+
+		//Subtitle delete
+		public virtual Subtitle SubtitleDelete(long subtitleId){
+
+			subtitle = new Subtitle ((long)record["id"], record.RecordClient, subtitleId);
+			subtitle.Delete();
+
+			//refresh video object
+			record.Read ((long)record["id"]);
+
+			return subtitle;
+		}
+
+		//Set Image Frame
+		public virtual void SetImageFrame(Dictionary<string,object> tokens){
+
+			var videoId = (long)record["id"];
+
+			if(tokens.ContainsKey("image")) {
+
+				var filepath = tokens["image"].ToString();
+				record.Create (tokens, "/"+videoId.ToString() +"/image", filepath);
+
+			} else {
+
+				record.Update (tokens, "/image");
+
+			}
 		}
 	}
 }

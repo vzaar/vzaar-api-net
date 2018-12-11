@@ -44,7 +44,7 @@ namespace tests
 
 			Signature signature = Signature.Single (tokens, new ClientMock (MockResponse.Signature));
 
-			Assert.IsNotNull (signature["signature"]);
+			Assert.IsNotNull (signature["x-amz-signature"]);
 			Assert.IsNotNull (signature ["guid"]);
 			Assert.IsNull (signature ["parts"]);
 
@@ -63,7 +63,7 @@ namespace tests
 
 			Signature signature = Signature.Multipart (tokens, new ClientMock (MockResponse.Signature));
 
-			Assert.IsNotNull (signature["signature"]);
+			Assert.IsNotNull (signature["x-amz-signature"]);
 			Assert.IsNotNull (signature ["guid"]);
 			Assert.IsNotNull (signature ["parts"]);
 
@@ -76,7 +76,7 @@ namespace tests
 
 			Signature signature = Signature.Create (filepath, new ClientMock (MockResponse.Signature));
 
-			Assert.IsNotNull (signature["signature"]);
+			Assert.IsNotNull (signature["x-amz-signature"]);
 			Assert.IsNotNull (signature ["guid"]);
 			Assert.IsNotNull (signature ["parts"]);
 
@@ -89,7 +89,7 @@ namespace tests
 
 			Signature signature = Signature.Create (filepath, new ClientMock (MockResponse.Signature));
 
-			Assert.IsNotNull (signature["signature"]);
+			Assert.IsNotNull (signature["x-amz-signature"]);
 			Assert.IsNotNull (signature ["guid"]);
 			Assert.IsNull (signature ["parts"]);
 
@@ -106,7 +106,7 @@ namespace tests
 
 			var data = (UploadSignatureType)signature.ToTypeDef (typeof(UploadSignatureType));
 
-			Assert.AreEqual (data.signature,(string)signature["signature"]);
+			Assert.AreEqual (data.key,(string)signature["key"]);
 			Assert.AreEqual (data.guid,(string)signature["guid"]);
 
 		}

@@ -42,6 +42,8 @@
     <None Include="packages.config" />
     <None Include="src\Fixture\movie-1mb.mp4" />
     <None Include="src\Fixture\movie-5mb.mp4" />
+    <None Include="src\Fixture\test.srt" />
+    <None Include="src\Fixture\test.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\CategoriesListTest.cs" />

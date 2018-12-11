@@ -225,12 +225,327 @@ namespace tests
 		}
 
 		[Test()]
+		public void SetImageFrame() {
+
+			var video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+			Dictionary<string, object> tokens = new Dictionary<string, object> () {
+				{ "time", 12.12 }
+			};
+
+			video.SetImageFrame(tokens);
+
+			Assert.IsNotNull (video["poster_url"]);
+
+		}
+
+		[Test()]
+		public void SetImageFrameFromFile() {
+
+			var video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+			Dictionary<string, object> tokens = new Dictionary<string, object> () {
+				{ "image", "../../src/Fixture/test.jpg"}
+			};
+
+			video.SetImageFrame(tokens);
+
+			Assert.IsNotNull (video["poster_url"]);
+
+		}
+
+		[Test()]
+		public void SetImageFrameFromFileException1() {
+
+			var expected = "File does not exsist:";
+			try {
+
+				Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+				Dictionary<string, object> tokens = new Dictionary<string, object> () {
+					{ "image", "unknown.jpg" }
+				};
+
+				video.SetImageFrame(tokens);
+
+				//if the exception is not thrown, the below assert fails
+				bool assert = true;
+				Assert.IsFalse(assert);
+			
+			} catch (Exception e) {
+
+				if (e is AggregateException) {
+					AggregateException ae = (AggregateException)e;
+
+					var flatten = ae.Flatten ();
+
+					foreach (var fe in flatten.InnerExceptions) {
+						if (fe is VzaarApiException)
+							StringAssert.Contains (expected, fe.Message);
+					}
+				}
+			}
+		}
+
+		[Test()]
+		public void SubtitleCreate() {
+
+				var video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+				Dictionary<string, object> tokens = new Dictionary<string, object> () {
+					{ "code", "en" },
+					{ "content", "1\n00:02:17,440 --> 00:02:20,375\nSenator, we're making\nour final approach into Coruscant." }
+				};
+
+				Subtitle subtitle = video.SubtitleCreate(tokens);
+
+				Assert.That (video.record.RecordClient, Is.SameAs (subtitle.record.RecordClient));
+
+				Assert.AreEqual (subtitle.record.RecordEndpoint, "videos/7574853/subtitles");
+
+				Assert.IsNotNull (subtitle["id"]);
+				Assert.IsNotNull (subtitle["language"]);
+
+		}
+
+		[Test()]
+		public void SubtitleCreateFromFile() {
+
+				var video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+				Dictionary<string, object> tokens = new Dictionary<string, object> () {
+					{ "code", "en" },
+					{ "file", "../../src/Fixture/test.srt" }
+				};
+
+				Subtitle subtitle = video.SubtitleCreate(tokens);
+
+				Assert.IsNotNull (subtitle["id"]);
+				Assert.IsNotNull (subtitle["language"]);
+
+		}
+
+		[Test()]
+		public void SubtitleUpdate() {
+
+				Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+				Dictionary<string, object> tokens = new Dictionary<string, object> () {
+					{ "code", "en" },
+					{ "content", "1\n00:02:17,440 --> 00:02:20,375\nSenator, we're making\nour final approach into Coruscant." }
+				};
+
+				var subtitleId = 26548;
+
+				var updatedAt = (((List<Dictionary<string,object>>)video["subtitles"])[0]["updated_at"]).ToString();
+
+				Subtitle subtitle = video.SubtitleUpdate(subtitleId, tokens);
+
+				Assert.That (video.record.RecordClient, Is.SameAs (subtitle.record.RecordClient));
+
+				Assert.AreEqual (subtitle.record.RecordEndpoint, "videos/7574853/subtitles");
+				Assert.AreEqual ((long)subtitle.record["id"], (long)subtitleId);
+
+				var new_updatedAt = subtitle["updated_at"].ToString();
+				Assert.AreNotEqual (updatedAt, new_updatedAt);
+
+		}
+
+		[Test()]
+		public void SubtitleUpdateFromFile() {
+
+				Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+				Dictionary<string, object> tokens = new Dictionary<string, object> () {
+					{ "code", "en" },
+					{ "file", "../../src/Fixture/test.srt" }
+				};
+
+				var subtitleId = 26548;
+
+				var updatedAt = (((List<Dictionary<string,object>>)video["subtitles"])[0]["updated_at"]).ToString();
+
+				Subtitle subtitle = video.SubtitleUpdate(subtitleId, tokens);
+
+				var new_updatedAt = subtitle["updated_at"].ToString();
+				Assert.AreNotEqual (updatedAt, new_updatedAt);
+
+		}
+
+		[Test()]
+		public void SubtitleDelete() {
+
+			Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+			var subtitleId = 26548;
+
+			Subtitle subtitle = video.SubtitleDelete(subtitleId);
+
+			var expected = "missing 'id'";
+			try {
+
+				var id = subtitle["id"];
+
+				//if the exception is not thrown, the below assert fails
+				bool assert = true;
+				Assert.IsFalse(assert);
+
+			} catch(VzaarApiException ve) {
+
+				StringAssert.Contains (expected,ve.Message);
+
+			} catch (Exception e){
+
+				if (e is AggregateException) {
+					AggregateException ae = (AggregateException)e;
+
+					var flatten = ae.Flatten ();
+
+					foreach (var fe in flatten.InnerExceptions) {
+						if (fe is VzaarApiException)
+							StringAssert.Contains (expected, fe.Message);
+					}
+				}
+			}
+		}
+
+		[Test()]
+		public void SubtitleCreateFromFileException1() {
+
+			var expected = "File does not exsist:";
+			try {
+
+				Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+				Dictionary<string, object> tokens = new Dictionary<string, object> () {
+					{ "code", "en" },
+					{ "file", "unknown.srt" }
+				};
+
+				Subtitle subtitle = video.SubtitleCreate(tokens);
+
+				//if the exception is not thrown, the below assert fails
+				bool assert = true;
+				Assert.IsFalse(assert);
+			
+			} catch (Exception e) {
+
+				if (e is AggregateException) {
+					AggregateException ae = (AggregateException)e;
+
+					var flatten = ae.Flatten ();
+
+					foreach (var fe in flatten.InnerExceptions) {
+						if (fe is VzaarApiException)
+							StringAssert.Contains (expected, fe.Message);
+					}
+				}
+			}
+		}
+
+		[Test()]
+		public void SubtitleUpdateFromFileException1() {
+
+			var expected = "File does not exsist:";
+			try {
+
+				Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+				Dictionary<string, object> tokens = new Dictionary<string, object> () {
+					{ "code", "en" },
+					{ "file", "unknown.srt" }
+				};
+
+				var subtitleId = 26548;
+
+				Subtitle subtitle = video.SubtitleUpdate(subtitleId, tokens);
+
+				//if the exception is not thrown, the below assert fails
+				bool assert = true;
+				Assert.IsFalse(assert);
+			
+			} catch (Exception e) {
+
+				if (e is AggregateException) {
+					AggregateException ae = (AggregateException)e;
+
+					var flatten = ae.Flatten ();
+
+					foreach (var fe in flatten.InnerExceptions) {
+						if (fe is VzaarApiException)
+							StringAssert.Contains (expected, fe.Message);
+					}
+				}
+			}
+		}
+		
+		[Test ()]
+		public void SubtitlesPaginate ()
+		{
+			Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+			SubtitlesList list = video.Subtitles();
+
+			Assert.AreEqual (list.records.RecordEndpoint, "videos/7574853/subtitles");
+
+			foreach (var item in list.Page) {
+
+				Assert.That (video.record.RecordClient, Is.SameAs (item.record.RecordClient));
+				Assert.AreEqual (item.record.RecordEndpoint, "videos/7574853/subtitles");
+			}
+
+			var page = list.Paginate ();
+
+			Assert.IsFalse (list.Next ());
+			Assert.IsFalse (list.Prevous ());
+			Assert.IsTrue (list.First ());
+			Assert.IsTrue (list.Last ());
+
+		}
+
+		[Test()]
+		public void SubtitlesEachItem ()
+		{
+			Video video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+			SubtitlesList list = video.Subtitles();
+
+			foreach (Subtitle item in list.EachItem()) {
+
+				Assert.That (video.record.RecordClient, Is.SameAs (item.record.RecordClient));
+				Assert.AreEqual (item.record.RecordEndpoint, "videos/7574853/subtitles");
+			}
+		} 
+
+		[Test()]
+		public void SubtitlesToTypeDef() {
+
+			var video = Video.Find (7574853, new ClientMock(MockResponse.Video));
+
+			Dictionary<string, object> tokens = new Dictionary<string, object> () {
+				{ "code", "en" },
+				{ "file", "../../src/Fixture/test.srt" }
+			};
+
+			Subtitle subtitle = video.SubtitleCreate(tokens);
+
+			var data = (SubtitleType)subtitle.ToTypeDef(typeof(SubtitleType));
+
+			Assert.AreEqual (data.id,(long)subtitle["id"]);
+			Assert.AreEqual (data.title,(string)subtitle["title"]);
+
+		}
+
+		[Test()]
 		public void ToTypeDef() {
 
 			var video = Video.Find (1, new ClientMock(MockResponse.Video));
 
 			var data = (VideoType)video.ToTypeDef (typeof(VideoType));
 
+			var count = data.subtitles.Count;
+
+			Assert.AreNotEqual (count,0);
 			Assert.AreEqual (data.id,(long)video["id"]);
 			Assert.AreEqual (data.title,(string)video["title"]);
 

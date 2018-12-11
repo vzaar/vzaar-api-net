@@ -59,6 +59,9 @@
     <Compile Include="src\Playlist.cs" />
     <Compile Include="src\PlaylistsList.cs" />
     <Compile Include="src\Resources\TypeDef\PlaylistType.cs" />
+    <Compile Include="src\Subtitle.cs" />
+    <Compile Include="src\SubtitlesList.cs" />
+    <Compile Include="src\Resources\TypeDef\SubtitleType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

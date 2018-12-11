@@ -23,7 +23,7 @@ namespace VzaarApi
 		public static bool urlAuth = false;
 
 		public static readonly string UPLOADER = "Vzaar .NET SDK";
-		public static readonly string VERSION = "2.0.0-alpha";
+		public static readonly string VERSION = "2.1.0-alpha";
 
 		public static readonly long ONE_MB = (1024 * 1024);
 		public static readonly long MULTIPART_MIN_SIZE = (5 * ONE_MB);
@@ -216,12 +216,14 @@ namespace VzaarApi
 			case HttpStatusCode.OK:
 			case HttpStatusCode.Created:
 			case HttpStatusCode.NoContent:
+			case HttpStatusCode.Accepted:
 				break;
 			case HttpStatusCode.BadRequest:
 			case HttpStatusCode.Unauthorized:
 			case HttpStatusCode.Forbidden:
 			case HttpStatusCode.NotFound:
 			case (HttpStatusCode)422: //Unprocessable Entity
+			case HttpStatusCode.UpgradeRequired:
 			case (HttpStatusCode)429: //Too many Requests
 			case HttpStatusCode.InternalServerError:
 
@@ -253,9 +255,12 @@ namespace VzaarApi
 			//move signature to Dictionary
 			Dictionary<string, string> postFields = new Dictionary<string, string>();
 
+
+			postFields.Add ("x-amz-credential", (string)signature["x-amz-credential"]);
+			postFields.Add ("x-amz-algorithm", (string)signature["x-amz-algorithm"]);
+			postFields.Add ("x-amz-date", (string)signature["x-amz-date"]);
+			postFields.Add ("x-amz-signature", (string)signature["x-amz-signature"]);
 			postFields.Add ("x-amz-meta-uploader", Client.UPLOADER + Client.VERSION);
-			postFields.Add ("AWSAccessKeyId",(string)signature["access_key_id"]);
-			postFields.Add ("Signature",(string)signature["signature"]);
 			postFields.Add ("acl",(string)signature["acl"]);
 			postFields.Add ("bucket",(string)signature["bucket"]);
 			postFields.Add ("policy",(string)signature["policy"]);
@@ -325,6 +330,117 @@ namespace VzaarApi
 					
 			}
 
+		}
+
+		internal async Task<string> HttpPostFormAsync(string endpoint, string filepath, Dictionary<string,string> postFields) {
+			FileInfo file = new FileInfo(filepath);
+
+			if (file.Exists == false) {
+				throw new VzaarApiException ("File does not exsist: "+filepath);
+			}
+
+			//change the filepath in Dictionary to filename
+			Dictionary<string, string> fields = new Dictionary<string, string> ();
+			foreach (var item in postFields) {
+
+				if(item.Value == filepath){
+					fields.Add(item.Key, file.Name);
+				} else {
+					fields.Add(item.Key, item.Value);
+				}
+
+			}
+
+			//upload file in POST form
+			HttpMethod httpMethod = HttpMethod.Post;
+			FileStream fileStream;
+			using(fileStream = new FileStream (filepath, FileMode.Open, FileAccess.Read)) {
+
+				var jsonResponse = await HttpSendMfdcAsync (httpMethod, endpoint, file.Name, fields, fileStream);
+				// response is validated in the HttpPostMfdcAsync
+
+				return jsonResponse;
+			}
+		}
+
+		internal async Task<string> HttpPatchFormAsync(string endpoint, string filepath, Dictionary<string,string> postFields) {
+			FileInfo file = new FileInfo(filepath);
+
+			if (file.Exists == false) {
+				throw new VzaarApiException ("File does not exsist: "+filepath);
+			}
+
+			//change the filepath in Dictionary to filename
+			Dictionary<string, string> fields = new Dictionary<string, string> ();
+			foreach (var item in postFields) {
+
+				if(item.Value == filepath){
+					fields.Add(item.Key, file.Name);
+				} else {
+					fields.Add(item.Key, item.Value);
+				}
+
+			}
+
+			//upload file in PATCH method
+			HttpMethod httpMethod = new HttpMethod("PATCH");
+			FileStream fileStream;
+			using(fileStream = new FileStream (filepath, FileMode.Open, FileAccess.Read)) {
+
+				var jsonResponse = await HttpSendMfdcAsync (httpMethod, endpoint, file.Name, fields, fileStream);
+				// response is validated in the HttpPostMfdcAsync
+
+				return jsonResponse;
+			}
+		}
+
+		internal virtual async Task<string> HttpSendMfdcAsync( HttpMethod httpMethod, string endpoint, string filename, Dictionary<string,string> fields, Stream stream) {
+
+			Uri httpUri = BuildUri (endpoint);
+
+			HttpRequestMessage msg = new HttpRequestMessage ();
+			msg.RequestUri = httpUri;
+			msg.Method = httpMethod;
+
+			MultipartFormDataContent mfdc = new MultipartFormDataContent ();
+
+			//data in POST form
+			StringContent postField;
+
+			Debug.WriteLine ("\n\nRequest Method");
+			Debug.WriteLine (msg.Method.ToString());
+			Debug.WriteLine ("Request Uri");
+			Debug.WriteLine (msg.RequestUri.AbsoluteUri);
+			Debug.WriteLine ("Request Headers");
+			Debug.WriteLine (msg.Headers.ToString().Trim());
+			Debug.WriteLine ("Request Content");
+
+
+			string fileField = ""; //get the post Field name for the file
+			foreach (var item in fields) {
+
+				if(item.Value != filename){
+
+					postField = new StringContent (item.Value);
+					mfdc.Add (postField, '"'+item.Key+'"');
+
+				} else {
+					fileField = item.Key;
+				}
+
+				Debug.WriteLine (item.Key + ": " + item.Value);
+			}
+
+			StreamContent postFile = new StreamContent (stream);
+			mfdc.Add (postFile, '"'+fileField+'"', filename);
+
+			Debug.WriteLine ("file: " + filename);
+
+			msg.Content = mfdc;
+
+			var jsonResponse = await HttpSendAsync (msg);
+
+			return jsonResponse;
 		}
 
 		internal virtual async Task HttpPostMfdcAsync( string hostname, string filename, Dictionary<string,string> fields, Stream stream) {

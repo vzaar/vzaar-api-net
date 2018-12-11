@@ -127,21 +127,33 @@ namespace tests
 				break;
 			case MockResponse.Video:
 				content = video;
+				if(msg.RequestUri.AbsoluteUri.Contains ("subtitles/26548") && (msg.Method == HttpMethod.Post || msg.Method == new HttpMethod("PATCH"))){
+					content = subtitle_update;
+				} 
+				else if (msg.RequestUri.AbsoluteUri.Contains ("subtitles/26548") && msg.Method == HttpMethod.Delete) {
+					content = "";
+				}
+				else if(msg.RequestUri.AbsoluteUri.Contains ("subtitles") && msg.Method == HttpMethod.Get){
+					content = subtitles_list;
+				}
+				else if(msg.RequestUri.AbsoluteUri.Contains ("subtitles")){
+					content = subtitle;
+				}
 				break;
 			case MockResponse.Signature:
 				content = "";
-				if (msg.RequestUri.AbsoluteUri.Contains ("single"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/single/2"))
 					content = signature_single;
 
-				if (msg.RequestUri.AbsoluteUri.Contains ("multipart"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/multipart/2"))
 					content = signature_multipart;
 				break;
 			case MockResponse.SignatureFailed:
 				content = "";
-				if (msg.RequestUri.AbsoluteUri.Contains ("single"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/single/2"))
 					content = signature_single_failed;
 
-				if (msg.RequestUri.AbsoluteUri.Contains ("multipart"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/multipart/2"))
 					content = signature_multipart_failed;
 				break;
 			case MockResponse.VideosList:
@@ -696,6 +708,7 @@ namespace tests
                     ""private"": false,
                     ""seo_url"": ""http://example.com/video.mp4"",
                     ""url"": null,
+					""poster_url"": ""https://view.vzaar.com/123/image"",
                     ""state"": ""ready"",
                     ""thumbnail_url"": ""https://view.vzaar.com/7574853/thumb"",
                     ""embed_code"": ""<iframe id=\""vzvd-7574853\"" name=\""vzvd-7574853\"" title=\""video player\"" class=\""video-player\"" type=\""text/html\"" width=\""448\"" height=\""278\"" frameborder=\""0\"" allowfullscreen allowTransparency=\""true\"" mozallowfullscreen webkitAllowFullScreen src=\""//view.vzaar.com/7574853/player\""></iframe>"",
@@ -719,17 +732,30 @@ namespace tests
                         ""bitrate"": 512,
                         ""status"": ""Finished""
                     }
-                    ]
+                    ],
+					""subtitles"": [
+					{
+						""id"": 26548,
+						""language"": ""English"",
+						""code"": ""en"",
+						""title"": ""9991021-en.srt"",
+						""url"": ""https://view.vzaar.com/subtitles/26548"",
+						""created_at"": ""2018-11-27T14:53:24.120Z"",
+						""updated_at"": ""2018-11-27T14:53:24.120Z""
+					}
+					]
                 }
             }";
 
 		string signature_single = @"{
                 ""data"": {
-                    ""access_key_id"": ""<access-key-id>"",
+					""x-amz-credential"": ""AKIAJ74MFWNVAFH6P7FQ/20181101/us-east-1/s3/aws4_request"",
+					""x-amz-algorithm"": ""AWS4-HMAC-SHA256"",
+					""x-amz-date"": ""20181101T151558Z"",
+					""x-amz-signature"": ""<signature-string>"",
                     ""key"": ""vzaar/vz9/1e8/source/vz91e80db09a494467b265f0c327950825/${filename}"",
                     ""acl"": ""private"",
                     ""policy"": ""<signed-policy-string>"",
-                    ""signature"": ""<signature-string>"",
                     ""success_action_status"": ""201"",
                     ""content_type"": ""binary/octet-stream"",
                     ""guid"": ""vz91e80db09a494467b265f0c327950825"",
@@ -740,11 +766,13 @@ namespace tests
 
 		string signature_multipart = @"{
                 ""data"": {
-                    ""access_key_id"": ""<access-key-id>"",
+					""x-amz-credential"": ""AKIAJ74MFWNVAFH6P7FQ/20181101/us-east-1/s3/aws4_request"",
+					""x-amz-algorithm"": ""AWS4-HMAC-SHA256"",
+					""x-amz-date"": ""20181101T151558Z"",
+					""x-amz-signature"": ""<signature-string>"",
                     ""key"": ""vzaar/vz9/1e8/source/vz91e80db09a494467b265f0c327950825/${filename}"",
                     ""acl"": ""private"",
                     ""policy"": ""<signed-policy-string>"",
-                    ""signature"": ""<signature-string>"",
                     ""success_action_status"": ""201"",
                     ""content_type"": ""binary/octet-stream"",
                     ""guid"": ""vz91e80db09a494467b265f0c327950825"",
@@ -758,11 +786,13 @@ namespace tests
 
 		string signature_single_failed = @"{
                 ""data"": {
-                    ""access_key_id"": ""<access-key-id>"",
+					""x-amz-credential"": ""AKIAJ74MFWNVAFH6P7FQ/20181101/us-east-1/s3/aws4_request"",
+					""x-amz-algorithm"": ""AWS4-HMAC-SHA256"",
+					""x-amz-date"": ""20181101T151558Z"",
+					""x-amz-signature"": ""<signature-string>"",
                     ""key"": null
                     ""acl"": ""private"",
                     ""policy"": ""<signed-policy-string>"",
-                    ""signature"": ""<signature-string>"",
                     ""success_action_status"": ""201"",
                     ""content_type"": ""binary/octet-stream"",
                     ""guid"": ""vz91e80db09a494467b265f0c327950825"",
@@ -773,11 +803,13 @@ namespace tests
 
 		string signature_multipart_failed = @"{
                 ""data"": {
-                    ""access_key_id"": ""<access-key-id>"",
+					""x-amz-credential"": ""AKIAJ74MFWNVAFH6P7FQ/20181101/us-east-1/s3/aws4_request"",
+					""x-amz-algorithm"": ""AWS4-HMAC-SHA256"",
+					""x-amz-date"": ""20181101T151558Z"",
+					""x-amz-signature"": ""<signature-string>"",
                     ""key"": ""vzaar/vz9/1e8/source/vz91e80db09a494467b265f0c327950825/${filename}"",
                     ""acl"": ""private"",
                     ""policy"": ""<signed-policy-string>"",
-                    ""signature"": ""<signature-string>"",
                     ""success_action_status"": ""201"",
                     ""content_type"": ""binary/octet-stream"",
                     ""guid"": ""vz91e80db09a494467b265f0c327950825"",
@@ -1017,6 +1049,53 @@ namespace tests
 			      ""last"": ""http://api.vzaar.com/api/v2/feeds/playlists?page=2&per_page=1""
 			    }
 			  }
+			}";
+
+			string subtitle = @"{
+			  ""data"": {
+			    ""id"": 26548,
+			    ""language"": ""English"",
+			    ""code"": ""en"",
+			    ""title"": ""9991021-en.srt"",
+			    ""url"": ""https://view.vzaar.com/subtitles/26548"",
+			    ""created_at"": ""2018-11-27T14:53:24.120Z"",
+			    ""updated_at"": ""2018-11-27T14:53:24.120Z""
+			  }
+			}";
+			
+			string subtitle_update = @"{
+			  ""data"": {
+			    ""id"": 26548,
+			    ""language"": ""English"",
+			    ""code"": ""en"",
+			    ""title"": ""9991021-en.srt"",
+			    ""url"": ""https://view.vzaar.com/subtitles/26548"",
+			    ""created_at"": ""2018-11-27T14:53:24.120Z"",
+			    ""updated_at"": ""2019-11-27T14:53:24.120Z""
+			  }
+			}";
+
+			string subtitles_list = @"{
+				""data"": [
+					{
+						""id"": 26319,
+						""language"": ""Polish"",
+						""code"": ""pl"",
+						""title"": ""9991021-pl.srt"",
+						""url"": ""https://view.vzaar.com/subtitles/26319"",
+						""created_at"": ""2018-11-24T19:01:57.000Z"",
+						""updated_at"": ""2018-11-24T19:01:58.000Z""
+					}
+				],
+				""meta"": {
+					""total_count"": 1,
+					""links"": {
+						""first"": ""http://api.vzaar.com/api/v2/ingest_recipes?page=1&per_page=1"",
+						""next"": null,
+						""previous"": null,
+						""last"": ""http://api.vzaar.com/api/v2/ingest_recipes?page=2&per_page=1""
+					}
+				}
 			}";
 
 	}//end class

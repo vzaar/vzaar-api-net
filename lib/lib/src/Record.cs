@@ -141,20 +141,39 @@ namespace VzaarApi
 
 		public virtual void Create(Dictionary<string,object> tokens){
 
-			string body = JsonConvert.SerializeObject (tokens);
-			var task = RecordClient.HttpPostAsync (RecordEndpoint, body);
-			task.Wait ();
+				string body = JsonConvert.SerializeObject (tokens);
+				var task = RecordClient.HttpPostAsync (RecordEndpoint, body);
+				task.Wait ();
 
-			UpdateRecord(task.Result);
+				UpdateRecord(task.Result);
 		}
 
-		public virtual void Create(Dictionary<string,object> tokens, string endponit){
+		public virtual void Create(Dictionary<string,object> tokens, string subEndpoint = null, string filepath = null){
 
-			string body = JsonConvert.SerializeObject (tokens);
-			var task = RecordClient.HttpPostAsync (RecordEndpoint + endponit, body);
-			task.Wait ();
+			string endpoint = RecordEndpoint;
 
-			UpdateRecord(task.Result);
+			if( subEndpoint != null ){
+				endpoint += subEndpoint;
+			}
+
+			if ( filepath == null) {
+				string body = JsonConvert.SerializeObject (tokens);
+				var task = RecordClient.HttpPostAsync (endpoint, body);
+				task.Wait ();
+
+				UpdateRecord(task.Result);
+			} else {
+
+				Dictionary<string,string> postFields = new Dictionary<string, string> ();
+				foreach (KeyValuePair<string,object> entry in tokens) {
+					postFields.Add (entry.Key, entry.Value.ToString ());
+				}
+
+				var task = RecordClient.HttpPostFormAsync (endpoint, filepath, postFields);
+				task.Wait ();
+
+				UpdateRecord(task.Result);
+			}
 		}
 
 		public virtual void Read(long id){
@@ -168,15 +187,36 @@ namespace VzaarApi
 		}
 
 
-		public virtual void Update(Dictionary<string,object> tokens){
+		public virtual void Update(Dictionary<string,object> tokens, string subEndpoint = null, string filepath = null){
 			
 			string endpoint = RecordEndpoint + "/" + this["id"].ToString();
-			string body = JsonConvert.SerializeObject(tokens);
 
-			var task = RecordClient.HttpPatchAsync (endpoint, body);
-			task.Wait ();
+			if( subEndpoint != null ){
+				endpoint += subEndpoint;
+			}
+			
+			if( filepath == null ) {
 
-			UpdateRecord(task.Result);
+				string body = JsonConvert.SerializeObject(tokens);
+
+				var task = RecordClient.HttpPatchAsync (endpoint, body);
+				task.Wait ();
+
+				UpdateRecord(task.Result);
+
+			} else {
+
+				Dictionary<string,string> postFields = new Dictionary<string, string> ();
+				foreach (KeyValuePair<string,object> entry in tokens) {
+					postFields.Add (entry.Key, entry.Value.ToString ());
+				}
+
+				var task = RecordClient.HttpPatchFormAsync (endpoint, filepath, postFields);
+				task.Wait ();
+
+				UpdateRecord(task.Result);
+
+			}
 		}
 
 		public virtual void Update(){

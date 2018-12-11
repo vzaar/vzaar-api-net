@@ -10,7 +10,7 @@ API](https://vzaar.readme.io/docs).
 ## Requirements
 
 The library code compiles on:
-- Mono 3.6.2 / .NET 45
+- Mono 4.6.2 / .NET 45
 - .NET Core 1.0 / .NET Standard >=1.3
 
 ## Backwards compatability
