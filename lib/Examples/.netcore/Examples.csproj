@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="[9.0.1,10)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\.netcore\lib.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\EncodingPresets.cs" />
+    <Compile Include="..\src\IngestRecipes.cs" />
+    <Compile Include="..\src\LinkUploads.cs" />
+    <Compile Include="..\src\UploadSignatures.cs" />
+    <Compile Include="..\src\VideoCategories.cs" />
+    <Compile Include="..\src\Videos.cs" />
+    <Compile Include="..\Examples.cs" />
+    <Compile Include="..\Program.cs" />
+    <Compile Include="..\src\Playlists.cs" />
+    <Compile Include="..\src\Subtitles.cs" />
+    <Compile Include="..\src\ImageFrame.cs" />
+  </ItemGroup>
+</Project>

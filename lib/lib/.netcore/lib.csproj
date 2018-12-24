@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework> 
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="[9.0.1,10)" />
+  </ItemGroup>
+  <ItemGroup>
+
+    <Compile Include="..\src\CategoriesList.cs" />
+    <Compile Include="..\src\Category.cs" />
+    <Compile Include="..\src\Client.cs" />
+    <Compile Include="..\src\LinkUpload.cs" />
+    <Compile Include="..\src\Preset.cs" />
+    <Compile Include="..\src\PresetsList.cs" />
+    <Compile Include="..\src\Recipe.cs" />
+    <Compile Include="..\src\RecipesList.cs" />
+    <Compile Include="..\src\Record.cs" />
+    <Compile Include="..\src\RecordsList.cs" />
+    <Compile Include="..\src\Signature.cs" />
+    <Compile Include="..\src\Video.cs" />
+    <Compile Include="..\src\VideosList.cs" />
+    <Compile Include="..\src\Resources\VideoUploadProgressEventArgs.cs" />
+    <Compile Include="..\src\Resources\VzaarApiException.cs" />
+    <Compile Include="..\src\Resources\TypeDef\EncodingPresetType.cs" />
+    <Compile Include="..\src\Resources\TypeDef\IngestRecipeType.cs" />
+    <Compile Include="..\src\Resources\TypeDef\UploadSignatureType.cs" />
+    <Compile Include="..\src\Resources\TypeDef\VideoCategoryType.cs" />
+    <Compile Include="..\src\Resources\TypeDef\VideoType.cs" />
+    <Compile Include="..\src\Playlist.cs" />
+    <Compile Include="..\src\PlaylistsList.cs" />
+    <Compile Include="..\src\Resources\TypeDef\PlaylistType.cs" />
+    <Compile Include="..\src\Subtitle.cs" />
+    <Compile Include="..\src\SubtitlesList.cs" />
+    <Compile Include="..\src\Resources\TypeDef\SubtitleType.cs" />
+  </ItemGroup>
+</Project>
