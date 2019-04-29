@@ -7,55 +7,63 @@ namespace VzaarApi
 	{
 		internal RecordsList records;
 
-		public List<Preset> Page { get; internal set;}
+		public List<Preset> Page { get; internal set; }
 
-		public PresetsList ()
+		public PresetsList()
 			: this(Client.GetClient())
 		{
 		}
 
-		public PresetsList (Client client)
+		public PresetsList(Client client)
 		{
-			records = new RecordsList ("encoding_presets", client);
+			records = new RecordsList("encoding_presets", client);
 			Page = new List<Preset>();
 		}
 
-		public Client GetClient() {
+		public Client GetClient()
+		{
 			return records.RecordClient;
 		}
 
-		internal void Initialize(){
+		internal void Initialize()
+		{
 
-			Page.Clear ();
+			Page.Clear();
 
-			foreach (var item in records.List) {
+			foreach (var item in records.List)
+			{
 
-				Preset preset = new Preset (item);
-				Page.Add (preset);
+				Preset preset = new Preset(item);
+				Page.Add(preset);
 
 			}
 		}
 
 		//get list
-		public static IEnumerable<Preset> EachItem() {
-			return PresetsList.EachItem (new Dictionary<string, string> ());
+		public static IEnumerable<Preset> EachItem()
+		{
+			return PresetsList.EachItem(new Dictionary<string, string>());
 		}
 
-		public static IEnumerable<Preset> EachItem(Client client) {
-			return PresetsList.EachItem (new Dictionary<string, string> (), client);
+		public static IEnumerable<Preset> EachItem(Client client)
+		{
+			return PresetsList.EachItem(new Dictionary<string, string>(), client);
 		}
 
-		public static IEnumerable<Preset> EachItem(Dictionary<string, string> query) {
+		public static IEnumerable<Preset> EachItem(Dictionary<string, string> query)
+		{
 
-			var presets = new PresetsList ();
+			var presets = new PresetsList();
 
-			presets.records.Read (query);
+			presets.records.Read(query);
 
-			do {
+			do
+			{
 
-				presets.Initialize ();
+				presets.Initialize();
 
-				foreach (var item in presets.Page) {
+				foreach (var item in presets.Page)
+				{
 					yield return item;
 				}
 
@@ -63,17 +71,20 @@ namespace VzaarApi
 
 		}
 
-		public static IEnumerable<Preset> EachItem(Dictionary<string, string> query, Client client) {
+		public static IEnumerable<Preset> EachItem(Dictionary<string, string> query, Client client)
+		{
 
-			var presets = new PresetsList (client);
+			var presets = new PresetsList(client);
 
-			presets.records.Read (query);
+			presets.records.Read(query);
 
-			do {
+			do
+			{
 
-				presets.Initialize ();
+				presets.Initialize();
 
-				foreach (var item in presets.Page) {
+				foreach (var item in presets.Page)
+				{
 					yield return item;
 				}
 
@@ -82,70 +93,78 @@ namespace VzaarApi
 		}
 
 		//paginate
-		public static PresetsList Paginate(Dictionary<string,string> query) {
+		public static PresetsList Paginate(Dictionary<string, string> query)
+		{
 
-			var presets = new PresetsList ();
+			var presets = new PresetsList();
 
 			presets.records.Read(query);
-			presets.Initialize ();
+			presets.Initialize();
 
 			return presets;
 		}
 
-		public static PresetsList Paginate(Dictionary<string,string> query, Client client) {
+		public static PresetsList Paginate(Dictionary<string, string> query, Client client)
+		{
 
-			var presets = new PresetsList (client);
+			var presets = new PresetsList(client);
 
 			presets.records.Read(query);
-			presets.Initialize ();
+			presets.Initialize();
 
 			return presets;
 		}
 
-		public static PresetsList Paginate(){
-			return PresetsList.Paginate (new Dictionary<string, string> ());
+		public static PresetsList Paginate()
+		{
+			return PresetsList.Paginate(new Dictionary<string, string>());
 		}
 
-		public static PresetsList Paginate(Client client){
-			return PresetsList.Paginate (new Dictionary<string, string> (), client);
+		public static PresetsList Paginate(Client client)
+		{
+			return PresetsList.Paginate(new Dictionary<string, string>(), client);
 		}
 
-		public virtual bool Next() {
+		public virtual bool Next()
+		{
 
-			bool result = records.Next ();
+			bool result = records.Next();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Prevous() {
-			
-			bool result = records.Previous ();
+		public virtual bool Prevous()
+		{
+
+			bool result = records.Previous();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool First() {
-			
-			bool result = records.First ();
+		public virtual bool First()
+		{
+
+			bool result = records.First();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Last() {
-			
-			bool result = records.Last ();
+		public virtual bool Last()
+		{
+
+			bool result = records.Last();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}

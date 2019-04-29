@@ -7,52 +7,57 @@ namespace VzaarApi
 		internal Record record;
 
 		//constructor
-		public Preset ()
+		public Preset()
 			: this(Client.GetClient())
 		{
 		}
 
-		public Preset (Client client)
+		public Preset(Client client)
 		{
-			record = new Record ("encoding_presets", client);
+			record = new Record("encoding_presets", client);
 		}
 
-		internal Preset (Record item)
+		internal Preset(Record item)
 		{
 			record = item;
 		}
 
-		public Client GetClient() {
+		public Client GetClient()
+		{
 			return record.RecordClient;
 		}
 
-		public object this[string index]{
+		public object this[string index]
+		{
 
-			get { return record [index];}
+			get { return record[index]; }
 
 		}
 
-		public object ToTypeDef(Type type){
+		public object ToTypeDef(Type type)
+		{
 
-			return record.ToTypeDef (type);
+			return record.ToTypeDef(type);
 
 		}
 
 		//lookup
-		public static Preset Find(long id) {
+		public static Preset Find(long id)
+		{
 
-			var preset = new Preset ();
+			var preset = new Preset();
 
-			preset.record.Read (id);
+			preset.record.Read(id);
 
 			return preset;
 		}
 
-		public static Preset Find(long id, Client client) {
+		public static Preset Find(long id, Client client)
+		{
 
-			var preset = new Preset (client);
+			var preset = new Preset(client);
 
-			preset.record.Read (id);
+			preset.record.Read(id);
 
 			return preset;
 		}

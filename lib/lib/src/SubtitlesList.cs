@@ -8,40 +8,46 @@ namespace VzaarApi
 	{
 		internal RecordsList records;
 
-		public List<Subtitle> Page { get; internal set;}
+		public List<Subtitle> Page { get; internal set; }
 
-		internal SubtitlesList (long videoId, Client client)
+		internal SubtitlesList(long videoId, Client client)
 		{
-			records = new RecordsList ("videos/" + videoId.ToString() + "/subtitles", client);
+			records = new RecordsList("videos/" + videoId.ToString() + "/subtitles", client);
 			Page = new List<Subtitle>();
 		}
 
-		internal void Initialize(){
+		internal void Initialize()
+		{
 
-			Page.Clear ();
+			Page.Clear();
 
-			foreach (var item in records.List) {
+			foreach (var item in records.List)
+			{
 
-				Subtitle subtitle = new Subtitle (item);
-				Page.Add (subtitle);
+				Subtitle subtitle = new Subtitle(item);
+				Page.Add(subtitle);
 
 			}
 		}
 
 		//get list
-		public virtual IEnumerable<Subtitle> EachItem() {
-			return EachItem (new Dictionary<string, string> ());
+		public virtual IEnumerable<Subtitle> EachItem()
+		{
+			return EachItem(new Dictionary<string, string>());
 		}
 
-		public virtual IEnumerable<Subtitle> EachItem(Dictionary<string, string> query) {
+		public virtual IEnumerable<Subtitle> EachItem(Dictionary<string, string> query)
+		{
 
-			records.Read (query);
+			records.Read(query);
 
-			do {
+			do
+			{
 
-				Initialize ();
+				Initialize();
 
-				foreach (var item in Page) {
+				foreach (var item in Page)
+				{
 					yield return item;
 				}
 
@@ -50,50 +56,56 @@ namespace VzaarApi
 		}
 
 		//paginate
-		public virtual SubtitlesList Paginate(Dictionary<string,string> query) {
+		public virtual SubtitlesList Paginate(Dictionary<string, string> query)
+		{
 
 			records.Read(query);
-			Initialize ();
+			Initialize();
 
 			return this;
 		}
 
-		public virtual SubtitlesList Paginate(){
-			return Paginate (new Dictionary<string, string> ());
+		public virtual SubtitlesList Paginate()
+		{
+			return Paginate(new Dictionary<string, string>());
 		}
 
-		public virtual bool Next() {
-			bool result = records.Next ();
+		public virtual bool Next()
+		{
+			bool result = records.Next();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Prevous() {
-			bool result = records.Previous ();
+		public virtual bool Prevous()
+		{
+			bool result = records.Previous();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool First() {
-			bool result = records.First ();
+		public virtual bool First()
+		{
+			bool result = records.First();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Last() {
-			bool result = records.Last ();
+		public virtual bool Last()
+		{
+			bool result = records.Last();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}

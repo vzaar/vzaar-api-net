@@ -12,97 +12,108 @@ namespace VzaarApi
 		internal Record record;
 
 		//constructor
-		public Playlist ()
+		public Playlist()
 			: this(Client.GetClient())
 		{
 		}
 
-		public Playlist (Client client)
+		public Playlist(Client client)
 		{
-			record = new Record ("feeds/playlists", client);
+			record = new Record("feeds/playlists", client);
 		}
 
-		internal Playlist (Record item)
+		internal Playlist(Record item)
 		{
 			record = item;
 		}
 
-		public Client GetClient() {
+		public Client GetClient()
+		{
 			return record.RecordClient;
 		}
 
-		public object this[string index]{
+		public object this[string index]
+		{
 
-			get { return record [index];}
+			get { return record[index]; }
 
-			set { record [index] = value; }
+			set { record[index] = value; }
 		}
 
-		public object ToTypeDef(Type type){
+		public object ToTypeDef(Type type)
+		{
 
-			return record.ToTypeDef (type);
+			return record.ToTypeDef(type);
 
 		}
 
-		public bool Edited {
+		public bool Edited
+		{
 			get { return record.Edited; }
 		}
 
 		//create
-		public static Playlist Create(Dictionary<string,object> tokens) {
+		public static Playlist Create(Dictionary<string, object> tokens)
+		{
 
-			var playlist = new Playlist ();
+			var playlist = new Playlist();
 
-			playlist.record.Create (tokens);
+			playlist.record.Create(tokens);
 
 			return playlist;
 		}
 
-		public static Playlist Create(Dictionary<string,object> tokens, Client client){
+		public static Playlist Create(Dictionary<string, object> tokens, Client client)
+		{
 
-			var playlist = new Playlist (client);
+			var playlist = new Playlist(client);
 
-			playlist.record.Create (tokens);
+			playlist.record.Create(tokens);
 
 			return playlist;
 		}
 
 		//lookup
-		public static Playlist Find(long id) {
+		public static Playlist Find(long id)
+		{
 
-			var playlist = new Playlist ();
+			var playlist = new Playlist();
 
-			playlist.record.Read (id);
+			playlist.record.Read(id);
 
 			return playlist;
 		}
 
-		public static Playlist Find(long id, Client client) {
+		public static Playlist Find(long id, Client client)
+		{
 
-			var playlist = new Playlist (client);
+			var playlist = new Playlist(client);
 
-			playlist.record.Read (id);
+			playlist.record.Read(id);
 
 			return playlist;
 		}
 
 		//update
-		public virtual void Save() {
+		public virtual void Save()
+		{
 
-			record.Update ();
+			record.Update();
 
 		}
 
-		public virtual void Save(Dictionary<string,object> tokens) {
+		public virtual void Save(Dictionary<string, object> tokens)
+		{
 
-			record.Update (tokens);
+			record.Update(tokens);
 
 		}
 
 		//delete
-		public virtual void Delete() {
+		public virtual void Delete()
+		{
 
-			record.Delete ();
+			record.Delete();
 
 		}
 

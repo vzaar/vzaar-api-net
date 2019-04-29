@@ -7,55 +7,63 @@ namespace VzaarApi
 	{
 		internal RecordsList records;
 
-		public List<Video> Page { get; internal set;}
+		public List<Video> Page { get; internal set; }
 
-		public VideosList ()
+		public VideosList()
 			: this(Client.GetClient())
 		{
 		}
 
-		public VideosList (Client client)
+		public VideosList(Client client)
 		{
-			records = new RecordsList ("videos", client);
+			records = new RecordsList("videos", client);
 			Page = new List<Video>();
 		}
 
-		public Client GetClient() {
+		public Client GetClient()
+		{
 			return records.RecordClient;
 		}
 
-		internal void Initialize(){
+		internal void Initialize()
+		{
 
-			Page.Clear ();
+			Page.Clear();
 
-			foreach (var item in records.List) {
+			foreach (var item in records.List)
+			{
 
-				Video video = new Video (item);
-				Page.Add (video);
+				Video video = new Video(item);
+				Page.Add(video);
 
 			}
 		}
 
 		//get all list items
-		public static IEnumerable<Video> EachItem() {
-			return VideosList.EachItem (new Dictionary<string,string> ());
+		public static IEnumerable<Video> EachItem()
+		{
+			return VideosList.EachItem(new Dictionary<string, string>());
 		}
 
-		public static IEnumerable<Video> EachItem(Client client) {
-			return VideosList.EachItem (new Dictionary<string,string> (), client);
+		public static IEnumerable<Video> EachItem(Client client)
+		{
+			return VideosList.EachItem(new Dictionary<string, string>(), client);
 		}
 
-		public static IEnumerable<Video> EachItem(Dictionary<string,string> query) {
+		public static IEnumerable<Video> EachItem(Dictionary<string, string> query)
+		{
 
-			var videos = new VideosList ();
+			var videos = new VideosList();
 
-			videos.records.Read (query);
+			videos.records.Read(query);
 
-			do {
+			do
+			{
 
-				videos.Initialize ();
+				videos.Initialize();
 
-				foreach (var item in videos.Page) {
+				foreach (var item in videos.Page)
+				{
 					yield return item;
 				}
 
@@ -63,17 +71,20 @@ namespace VzaarApi
 
 		}
 
-		public static IEnumerable<Video> EachItem(Dictionary<string,string> query, Client client) {
+		public static IEnumerable<Video> EachItem(Dictionary<string, string> query, Client client)
+		{
 
-			var videos = new VideosList (client);
+			var videos = new VideosList(client);
 
-			videos.records.Read (query);
+			videos.records.Read(query);
 
-			do {
+			do
+			{
 
-				videos.Initialize ();
+				videos.Initialize();
 
-				foreach (var item in videos.Page) {
+				foreach (var item in videos.Page)
+				{
 					yield return item;
 				}
 
@@ -82,66 +93,74 @@ namespace VzaarApi
 		}
 
 		//paginate
-		public static VideosList Paginate(Dictionary<string,string> query) {
+		public static VideosList Paginate(Dictionary<string, string> query)
+		{
 
-			var videos = new VideosList ();
+			var videos = new VideosList();
 
 			videos.records.Read(query);
-			videos.Initialize ();
+			videos.Initialize();
 
 			return videos;
 		}
 
-		public static VideosList Paginate(Dictionary<string,string> query, Client client) {
+		public static VideosList Paginate(Dictionary<string, string> query, Client client)
+		{
 
-			var videos = new VideosList (client);
+			var videos = new VideosList(client);
 
 			videos.records.Read(query);
-			videos.Initialize ();
+			videos.Initialize();
 
 			return videos;
 		}
 
-		public static VideosList Paginate(){
-			return VideosList.Paginate (new Dictionary<string, string> ());
+		public static VideosList Paginate()
+		{
+			return VideosList.Paginate(new Dictionary<string, string>());
 		}
 
-		public static VideosList Paginate(Client client){
-			return VideosList.Paginate (new Dictionary<string, string> (), client);
+		public static VideosList Paginate(Client client)
+		{
+			return VideosList.Paginate(new Dictionary<string, string>(), client);
 		}
 
-		public virtual bool Next() {
-			bool result = records.Next ();
+		public virtual bool Next()
+		{
+			bool result = records.Next();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Prevous() {
-			bool result = records.Previous ();
+		public virtual bool Prevous()
+		{
+			bool result = records.Previous();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool First() {
-			bool result = records.First ();
+		public virtual bool First()
+		{
+			bool result = records.First();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Last() {
-			bool result = records.Last ();
+		public virtual bool Last()
+		{
+			bool result = records.Last();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}

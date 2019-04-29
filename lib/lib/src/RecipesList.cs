@@ -8,73 +8,84 @@ namespace VzaarApi
 	{
 		internal RecordsList records;
 
-		public List<Recipe> Page { get; internal set;}
+		public List<Recipe> Page { get; internal set; }
 
-		public RecipesList ()
+		public RecipesList()
 			: this(Client.GetClient())
 		{
 		}
 
-		public RecipesList (Client client)
+		public RecipesList(Client client)
 		{
-			records = new RecordsList ("ingest_recipes", client);
+			records = new RecordsList("ingest_recipes", client);
 			Page = new List<Recipe>();
 		}
 
-		public Client GetClient() {
+		public Client GetClient()
+		{
 			return records.RecordClient;
 		}
 
-		internal void Initialize(){
+		internal void Initialize()
+		{
 
-			Page.Clear ();
+			Page.Clear();
 
-			foreach (var item in records.List) {
+			foreach (var item in records.List)
+			{
 
-				Recipe recipe = new Recipe (item);
-				Page.Add (recipe);
+				Recipe recipe = new Recipe(item);
+				Page.Add(recipe);
 
 			}
 		}
 
 		//get list
-		public static IEnumerable<Recipe> EachItem() {
-			return RecipesList.EachItem (new Dictionary<string, string> ());
+		public static IEnumerable<Recipe> EachItem()
+		{
+			return RecipesList.EachItem(new Dictionary<string, string>());
 		}
 
-		public static IEnumerable<Recipe> EachItem(Client client) {
-			return RecipesList.EachItem (new Dictionary<string, string> (), client);
+		public static IEnumerable<Recipe> EachItem(Client client)
+		{
+			return RecipesList.EachItem(new Dictionary<string, string>(), client);
 		}
 
-		public static IEnumerable<Recipe> EachItem(Dictionary<string, string> query) {
+		public static IEnumerable<Recipe> EachItem(Dictionary<string, string> query)
+		{
 
-			var recipes = new RecipesList ();
+			var recipes = new RecipesList();
 
-			recipes.records.Read (query);
+			recipes.records.Read(query);
 
-			do {
-				
-				recipes.Initialize ();
+			do
+			{
 
-				foreach (var item in recipes.Page) {
+				recipes.Initialize();
+
+				foreach (var item in recipes.Page)
+				{
 					yield return item;
 				}
 
 			} while (recipes.records.Next());
-	
+
 		}
 
-		public static IEnumerable<Recipe> EachItem(Dictionary<string, string> query, Client client) {
+		public static IEnumerable<Recipe> EachItem(Dictionary<string, string> query, Client client)
+		{
 
-			var recipes = new RecipesList (client);
+			var recipes = new RecipesList(client);
 
-			recipes.records.Read (query);
+			recipes.records.Read(query);
 
-			do {
+			do
+			{
 
-				recipes.Initialize ();
+				recipes.Initialize();
 
-				foreach (var item in recipes.Page) {
+				foreach (var item in recipes.Page)
+				{
 					yield return item;
 				}
 
@@ -83,66 +94,74 @@ namespace VzaarApi
 		}
 
 		//paginate
-		public static RecipesList Paginate(Dictionary<string,string> query) {
+		public static RecipesList Paginate(Dictionary<string, string> query)
+		{
 
-			var recipes = new RecipesList ();
+			var recipes = new RecipesList();
 
 			recipes.records.Read(query);
-			recipes.Initialize ();
+			recipes.Initialize();
 
 			return recipes;
 		}
 
-		public static RecipesList Paginate(Dictionary<string,string> query, Client client) {
+		public static RecipesList Paginate(Dictionary<string, string> query, Client client)
+		{
 
-			var recipes = new RecipesList (client);
+			var recipes = new RecipesList(client);
 
 			recipes.records.Read(query);
-			recipes.Initialize ();
+			recipes.Initialize();
 
 			return recipes;
 		}
 
-		public static RecipesList Paginate(){
-			return RecipesList.Paginate (new Dictionary<string, string> ());
+		public static RecipesList Paginate()
+		{
+			return RecipesList.Paginate(new Dictionary<string, string>());
 		}
 
-		public static RecipesList Paginate(Client client){
-			return RecipesList.Paginate (new Dictionary<string, string> (), client);
+		public static RecipesList Paginate(Client client)
+		{
+			return RecipesList.Paginate(new Dictionary<string, string>(), client);
 		}
 
-		public virtual bool Next() {
-			bool result = records.Next ();
+		public virtual bool Next()
+		{
+			bool result = records.Next();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Prevous() {
-			bool result = records.Previous ();
+		public virtual bool Prevous()
+		{
+			bool result = records.Previous();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool First() {
-			bool result = records.First ();
+		public virtual bool First()
+		{
+			bool result = records.First();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}
 
-		public virtual bool Last() {
-			bool result = records.Last ();
+		public virtual bool Last()
+		{
+			bool result = records.Last();
 
 			if (result)
-				Initialize ();
+				Initialize();
 
 			return result;
 		}

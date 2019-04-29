@@ -12,100 +12,111 @@ namespace VzaarApi
 		internal Record record;
 
 		//constructor
-		public Recipe ()
+		public Recipe()
 			: this(Client.GetClient())
 		{
 		}
 
-		public Recipe (Client client)
+		public Recipe(Client client)
 		{
-			record = new Record ("ingest_recipes", client);
+			record = new Record("ingest_recipes", client);
 		}
 
-		internal Recipe (Record item)
+		internal Recipe(Record item)
 		{
 			record = item;
 		}
 
-		public Client GetClient() {
+		public Client GetClient()
+		{
 			return record.RecordClient;
 		}
 
-		public object this[string index]{
+		public object this[string index]
+		{
 
-			get { return record [index];}
+			get { return record[index]; }
 
-			set { record [index] = value; }
+			set { record[index] = value; }
 		}
 
-		public object ToTypeDef(Type type){
+		public object ToTypeDef(Type type)
+		{
 
-			return record.ToTypeDef (type);
+			return record.ToTypeDef(type);
 
 		}
 
-		public bool Edited {
+		public bool Edited
+		{
 			get { return record.Edited; }
 		}
 
 		//create
-		public static Recipe Create(Dictionary<string,object> tokens) {
+		public static Recipe Create(Dictionary<string, object> tokens)
+		{
 
-			var recipe = new Recipe ();
+			var recipe = new Recipe();
 
-			recipe.record.Create (tokens);
+			recipe.record.Create(tokens);
 
 			return recipe;
 		}
 
-		public static Recipe Create(Dictionary<string,object> tokens, Client client){
+		public static Recipe Create(Dictionary<string, object> tokens, Client client)
+		{
 
-			var recipe = new Recipe (client);
+			var recipe = new Recipe(client);
 
-			recipe.record.Create (tokens);
+			recipe.record.Create(tokens);
 
 			return recipe;
 		}
 
 		//lookup
-		public static Recipe Find(long id) {
-			
-			var recipe = new Recipe ();
+		public static Recipe Find(long id)
+		{
 
-			recipe.record.Read (id);
+			var recipe = new Recipe();
+
+			recipe.record.Read(id);
 
 			return recipe;
 		}
 
-		public static Recipe Find(long id, Client client) {
+		public static Recipe Find(long id, Client client)
+		{
 
-			var recipe = new Recipe (client);
+			var recipe = new Recipe(client);
 
-			recipe.record.Read (id);
+			recipe.record.Read(id);
 
 			return recipe;
 		}
 
 		//update
-		public virtual void Save() {
+		public virtual void Save()
+		{
 
-			record.Update ();
+			record.Update();
 
 		}
 
-		public virtual void Save(Dictionary<string,object> tokens) {
+		public virtual void Save(Dictionary<string, object> tokens)
+		{
 
-			record.Update (tokens);
+			record.Update(tokens);
 
 		}
 
 		//delete
-		public virtual void Delete() {
+		public virtual void Delete()
+		{
 
-			record.Delete ();
-			
+			record.Delete();
+
 		}
-			
+
 	}
 }
 

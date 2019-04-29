@@ -12,75 +12,86 @@ namespace VzaarApi
 		internal Record record;
 
 		//constructor
-		internal Subtitle (long videoId, Client client)
+		internal Subtitle(long videoId, Client client)
 		{
-			record = new Record ("videos/" + videoId.ToString() + "/subtitles", client);
+			record = new Record("videos/" + videoId.ToString() + "/subtitles", client);
 		}
 
-		internal Subtitle (long videoId, Client client, long subtitleId)
+		internal Subtitle(long videoId, Client client, long subtitleId)
 		{
-			record = new Record ("videos/" + videoId.ToString() + "/subtitles", client);
+			record = new Record("videos/" + videoId.ToString() + "/subtitles", client);
 			/*
             The endpoint does not provide Lookup, thus
             it is not possible to read data to 
             initialize the object before it is used.
             */
-			record ["id"] = subtitleId;
+			record["id"] = subtitleId;
 		}
 
-		internal Subtitle (Record item)
+		internal Subtitle(Record item)
 		{
 			record = item;
 		}
 
-		public object this[string index]{
+		public object this[string index]
+		{
 
-			get { return record [index];}
+			get { return record[index]; }
 
 		}
 
-		public object ToTypeDef(Type type){
+		public object ToTypeDef(Type type)
+		{
 
-			return record.ToTypeDef (type);
+			return record.ToTypeDef(type);
 
 		}
 
 		//create
-		internal virtual void Create(Dictionary<string,object> tokens) {
+		internal virtual void Create(Dictionary<string, object> tokens)
+		{
 
-			if(tokens.ContainsKey("file")) {
+			if (tokens.ContainsKey("file"))
+			{
 
 				var filepath = tokens["file"].ToString();
 
-				record.Create (tokens, null, filepath);
+				record.Create(tokens, null, filepath);
 
-			} else {
+			}
+			else
+			{
 
-				record.Create (tokens);
-				
+				record.Create(tokens);
+
 			}
 		}
 
 		//update
-		internal virtual void Save(Dictionary<string,object> tokens) {
+		internal virtual void Save(Dictionary<string, object> tokens)
+		{
 
-			if(tokens.ContainsKey("file")) {
+			if (tokens.ContainsKey("file"))
+			{
 
 				var filepath = tokens["file"].ToString();
 
-				record.Update (tokens, null, filepath);
+				record.Update(tokens, null, filepath);
 
-			} else {
+			}
+			else
+			{
 
-				record.Update (tokens);
+				record.Update(tokens);
 
 			}
 		}
 
 		//delete
-		internal virtual void Delete() {
+		internal virtual void Delete()
+		{
 
-			record.Delete ();
+			record.Delete();
 
 		}
 
