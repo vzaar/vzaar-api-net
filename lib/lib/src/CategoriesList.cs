@@ -11,9 +11,8 @@ namespace VzaarApi
 		public List<Category> Page { get; internal set;}
 
 		public CategoriesList ()
+			: this(Client.GetClient())
 		{
-			records = new RecordsList ("categories");
-			Page = new List<Category>();
 		}
 
 		public CategoriesList (Client client)

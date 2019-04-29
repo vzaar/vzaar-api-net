@@ -11,9 +11,8 @@ namespace VzaarApi
 		public List<Playlist> Page { get; internal set;}
 
 		public PlaylistsList ()
+			: this(Client.GetClient())
 		{
-			records = new RecordsList ("feeds/playlists");
-			Page = new List<Playlist>();
 		}
 
 		public PlaylistsList (Client client)

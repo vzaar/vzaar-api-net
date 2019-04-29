@@ -13,9 +13,8 @@ namespace VzaarApi
 
 		//constructor
 		public Recipe ()
+			: this(Client.GetClient())
 		{
-			record = new Record ("ingest_recipes");
-
 		}
 
 		public Recipe (Client client)

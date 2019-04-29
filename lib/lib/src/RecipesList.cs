@@ -11,9 +11,8 @@ namespace VzaarApi
 		public List<Recipe> Page { get; internal set;}
 
 		public RecipesList ()
+			: this(Client.GetClient())
 		{
-			records = new RecordsList ("ingest_recipes");
-			Page = new List<Recipe>();
 		}
 
 		public RecipesList (Client client)

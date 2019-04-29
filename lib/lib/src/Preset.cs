@@ -8,9 +8,8 @@ namespace VzaarApi
 
 		//constructor
 		public Preset ()
+			: this(Client.GetClient())
 		{
-			record = new Record ("encoding_presets");
-
 		}
 
 		public Preset (Client client)

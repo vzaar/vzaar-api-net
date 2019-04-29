@@ -19,13 +19,8 @@ namespace VzaarApi
 		public string empty_record = @"{'data':{}}";
 
 		public Record (string endpoint)
+			: this(endpoint, Client.GetClient())
 		{
-			Data = JObject.Parse(empty_record);
-			Parameters = new Dictionary<string, object> ();
-			cache = new JObject ();
-
-			RecordClient = Client.GetClient ();
-			RecordEndpoint = endpoint;
 		}
 
 		public Record (string endpoint, Client client)

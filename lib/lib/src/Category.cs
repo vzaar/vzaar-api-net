@@ -9,9 +9,8 @@ namespace VzaarApi
 
 		//constructor
 		public Category ()
+			: this(Client.GetClient())
 		{
-			record = new Record ("categories");
-
 		}
 
 		public Category (Client client)

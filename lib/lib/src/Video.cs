@@ -13,9 +13,8 @@ namespace VzaarApi
 
 		//constructor
 		public Video ()
+			: this(Client.GetClient())
 		{
-			record = new Record ("videos");
-
 		}
 
 		public Video (Client client)

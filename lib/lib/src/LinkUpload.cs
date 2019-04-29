@@ -8,9 +8,8 @@ namespace VzaarApi
 		internal Record record;
 
 		public LinkUpload ()
+			: this(Client.GetClient())
 		{
-			record = new Record ("link_uploads");
-
 		}
 
 		public LinkUpload (Client client)

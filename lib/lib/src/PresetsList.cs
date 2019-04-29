@@ -10,9 +10,8 @@ namespace VzaarApi
 		public List<Preset> Page { get; internal set;}
 
 		public PresetsList ()
+			: this(Client.GetClient())
 		{
-			records = new RecordsList ("encoding_presets");
-			Page = new List<Preset>();
 		}
 
 		public PresetsList (Client client)

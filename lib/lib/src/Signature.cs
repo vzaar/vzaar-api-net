@@ -10,9 +10,8 @@ namespace VzaarApi
 
 		//constructor
 		public Signature ()
+			: this(Client.GetClient())
 		{
-			record = new Record ("signature");
-
 		}
 
 		public Signature (Client client)

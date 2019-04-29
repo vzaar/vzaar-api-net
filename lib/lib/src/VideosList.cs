@@ -10,9 +10,8 @@ namespace VzaarApi
 		public List<Video> Page { get; internal set;}
 
 		public VideosList ()
+			: this(Client.GetClient())
 		{
-			records = new RecordsList ("videos");
-			Page = new List<Video>();
 		}
 
 		public VideosList (Client client)

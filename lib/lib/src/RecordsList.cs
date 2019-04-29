@@ -14,12 +14,8 @@ namespace VzaarApi
 		public List<Record> List { get; }
 
 		public RecordsList (string endpoint)
+			: this(endpoint, Client.GetClient())
 		{
-			Data = new JObject();
-			List = new List<Record> ();
-
-			RecordClient = Client.GetClient ();
-			RecordEndpoint = endpoint;
 		}
 
 		public RecordsList (string endpoint, Client client)

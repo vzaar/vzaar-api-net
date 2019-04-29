@@ -13,9 +13,8 @@ namespace VzaarApi
 
 		//constructor
 		public Playlist ()
+			: this(Client.GetClient())
 		{
-			record = new Record ("feeds/playlists");
-
 		}
 
 		public Playlist (Client client)
