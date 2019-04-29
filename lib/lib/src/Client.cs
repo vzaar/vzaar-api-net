@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace VzaarApi
 {
@@ -81,7 +82,7 @@ namespace VzaarApi
 
 			string value = string.Empty;
 			if (httpHeaders.TryGetValues (key, out header)) {
-				value = ((List<string>)header) [0];
+				value = header.FirstOrDefault();
 			}
 			return value;
 		}
