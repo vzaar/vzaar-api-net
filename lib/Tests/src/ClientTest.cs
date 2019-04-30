@@ -11,24 +11,6 @@ namespace tests
 	[TestFixture()]
 	public class ClientTest
 	{
-		[SetUp]
-		protected void SetUp() {
-			Client.client_id = "client_static";
-			Client.auth_token = "token_static";
-			Client.urlAuth = true;
-			Client.url = "https://example.static.com";
-			Client.version = "vX";
-		}
-
-		[TearDown]
-		protected void Dispose() {
-			Client.client_id = "client_static";
-			Client.auth_token = "token_static";
-			Client.urlAuth = true;
-			Client.url = "https://example.static.com";
-			Client.version = "v2";
-		}
-
 		[Test()]
 		public void GetClient()
 		{
@@ -94,7 +76,7 @@ namespace tests
 			var client2 = Client.GetClient();
 			var uri2 = client2.BuildUri("endpoint");
 
-			Assert.AreEqual (uri2, new Uri("https://example.static.com/vX/endpoint"));
+			Assert.AreEqual(uri2, new Uri("https://api.vzaar.com/api/v2/endpoint"));
 		}
 
 		[Test()]
