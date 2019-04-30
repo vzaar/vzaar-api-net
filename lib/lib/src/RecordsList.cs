@@ -1,24 +1,24 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
 	internal class RecordsList
 	{
-		public Client RecordClient { get; set; }
-		public string RecordEndpoint { get; set; }
+		internal Client RecordClient { get; set; }
+		internal string RecordEndpoint { get; set; }
 
-		public JObject Data { get; set; }
-		public List<Record> List { get; }
+		internal JObject Data { get; set; }
+		internal List<Record> List { get; }
 
-		public RecordsList(string endpoint)
+		internal RecordsList(string endpoint)
 			: this(endpoint, Client.GetClient())
 		{
 		}
 
-		public RecordsList(string endpoint, Client client)
+		internal RecordsList(string endpoint, Client client)
 		{
 			Data = new JObject();
 			List = new List<Record>();
@@ -27,9 +27,8 @@ namespace VzaarApi
 			RecordEndpoint = endpoint;
 		}
 
-		public virtual void UpdateList(string json)
+		internal virtual void UpdateList(string json)
 		{
-
 			//set new data
 			Data = JObject.Parse(json);
 
@@ -68,49 +67,43 @@ namespace VzaarApi
 
 			var recordsArray = (JArray)Data["data"];
 
-			for (int i = 0; i < recordsArray.Count; i++)
+			foreach (var element in recordsArray)
 			{
+				var record = new JObject
+				{
+					["data"] = element
+				};
 
-				var element = recordsArray[i];
-
-				var record = new JObject();
-				record["data"] = element;
-
-				Record toList = new Record(RecordEndpoint, RecordClient);
-				toList.Data = record;
+				Record toList = new Record(RecordEndpoint, RecordClient)
+				{
+					Data = record
+				};
 
 				List.Add(toList);
-
 			}
-
 		}
 
-		public virtual void Read(Dictionary<string, string> query)
+		internal virtual Task Read(Dictionary<string, string> query)
 		{
-
 			string path = "";
 
-			Read(path, query);
+			return Read(path, query);
 		}
 
-		public virtual void Read(string endpoint, Dictionary<string, string> query)
+		internal virtual async Task Read(string endpoint, Dictionary<string, string> query)
 		{
+			var responseJson = await RecordClient.HttpGetAsync(RecordEndpoint + endpoint, query);
 
-			var task = RecordClient.HttpGetAsync(RecordEndpoint + endpoint, query);
-			task.Wait();
-
-			UpdateList(task.Result);
-
+			UpdateList(responseJson);
 		}
 
 		internal Dictionary<string, string> ExtractUriQuery(string link)
 		{
+			var linkUri = new UriBuilder((string)link);
+			var linkString = linkUri.Query.Substring(1);
+			var linkQuery = linkString.Split('&');
 
-			UriBuilder linkUri = new UriBuilder((string)link);
-			string linkString = linkUri.Query.Substring(1);
-			string[] linkQuery = linkString.Split('&');
-
-			Dictionary<string, string> query = new Dictionary<string, string>();
+			var query = new Dictionary<string, string>();
 
 			foreach (string q in linkQuery)
 			{
@@ -126,96 +119,45 @@ namespace VzaarApi
 			return query;
 		}
 
-		internal void GetPage(string link)
+		internal virtual Task<bool> First()
 		{
+			return JumpToPage("first");
+		}
 
+		internal virtual Task<bool> Next()
+		{
+			return JumpToPage("next");
+		}
+
+		internal virtual Task<bool> Previous()
+		{
+			return JumpToPage("previous");
+		}
+
+		internal virtual Task<bool> Last()
+		{
+			return JumpToPage("last");
+		}
+
+		private async Task<bool> JumpToPage(string linkName)
+		{
+			var link = Data["meta"]["links"][linkName];
+
+			if (link.Type != JTokenType.Null)
+			{
+				await GetPage((string)link);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		private Task GetPage(string link)
+		{
 			var query = ExtractUriQuery(link);
-			Read(query);
 
+			return Read(query);
 		}
-
-		public virtual bool First()
-		{
-
-			var link = Data["meta"]["links"]["first"];
-
-			if (link.Type != JTokenType.Null)
-			{
-
-				GetPage((string)link);
-
-				return true;
-
-			}
-			else
-			{
-
-				return false;
-			}
-		}
-
-		public virtual bool Next()
-		{
-
-			var link = Data["meta"]["links"]["next"];
-
-			if (link.Type != JTokenType.Null)
-			{
-
-				GetPage((string)link);
-
-				return true;
-
-			}
-			else
-			{
-
-				return false;
-
-			}
-		}
-
-		public virtual bool Previous()
-		{
-
-			var link = Data["meta"]["links"]["previous"];
-
-			if (link.Type != JTokenType.Null)
-			{
-
-				GetPage((string)link);
-
-				return true;
-
-			}
-			else
-			{
-
-				return false;
-
-			}
-		}
-
-		public virtual bool Last()
-		{
-
-			var link = Data["meta"]["links"]["last"];
-
-			if (link.Type != JTokenType.Null)
-			{
-
-				GetPage((string)link);
-
-				return true;
-
-			}
-			else
-			{
-
-				return false;
-
-			}
-		}
-
 	}
 }

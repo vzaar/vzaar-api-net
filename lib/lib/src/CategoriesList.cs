@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -14,11 +15,11 @@ namespace VzaarApi
 		{
 		}
 
-		internal void FindSubtree(long id, Dictionary<string, string> query)
+		internal async Task FindSubtree(long id, Dictionary<string, string> query)
 		{
 			string path = "/" + id + "/subtree";
 
-			records.Read(path, query);
+			await records.Read(path, query);
 
 			Initialize();
 		}
@@ -41,9 +42,29 @@ namespace VzaarApi
 
 		public static CategoriesList Subtree(long id, Dictionary<string, string> query, Client client)
 		{
+			return SubtreeAsync(id, query, client).Result;
+		}
+
+		public static Task<CategoriesList> SubtreeAsync(long id)
+		{
+			return SubtreeAsync(id, new Dictionary<string, string>(), Client.GetClient());
+		}
+
+		public static Task<CategoriesList> SubtreeAsync(long id, Client client)
+		{
+			return SubtreeAsync(id, new Dictionary<string, string>(), client);
+		}
+
+		public static Task<CategoriesList> SubtreeAsync(long id, Dictionary<string, string> query)
+		{
+			return SubtreeAsync(id, query, Client.GetClient());
+		}
+
+		public static async Task<CategoriesList> SubtreeAsync(long id, Dictionary<string, string> query, Client client)
+		{
 			var categories = new CategoriesList(client);
 
-			categories.FindSubtree(id, query);
+			await categories.FindSubtree(id, query).ConfigureAwait(false);
 
 			return categories;
 		}

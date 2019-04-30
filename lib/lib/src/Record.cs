@@ -1,29 +1,24 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
 	internal class Record
 	{
+		internal Client RecordClient { get; set; }
+		internal string RecordEndpoint { get; set; }
 
-		public Client RecordClient { get; set; }
-		public string RecordEndpoint { get; set; }
+		internal JObject Data { get; set; }
+		internal Dictionary<string, object> Parameters { get; set; }
+		internal JObject cache;
 
-		public JObject Data { get; set; }
-		public Dictionary<string, object> Parameters { get; set; }
-		public JObject cache;
+		internal string empty_record = @"{'data':{}}";
 
-		public string empty_record = @"{'data':{}}";
-
-		public Record(string endpoint)
-			: this(endpoint, Client.GetClient())
-		{
-		}
-
-		public Record(string endpoint, Client client)
+		internal Record(string endpoint, Client client)
 		{
 			Data = JObject.Parse(empty_record);
 			Parameters = new Dictionary<string, object>();
@@ -33,9 +28,8 @@ namespace VzaarApi
 			RecordEndpoint = endpoint;
 		}
 
-		public object ToTypeDef(Type type)
+		internal object ToTypeDef(Type type)
 		{
-
 			var data = Data["data"];
 
 			var item = data.ToObject(type);
@@ -43,23 +37,10 @@ namespace VzaarApi
 			return item;
 		}
 
-		public bool Edited
+		internal bool Edited => Parameters.Any();
+
+		internal object this[string index]
 		{
-
-			get
-			{
-				if (Parameters.Count == 0)
-					return false;
-				else
-					return true;
-			}
-
-			internal set { }
-		}
-
-		public object this[string index]
-		{
-
 			get
 			{
 
@@ -108,14 +89,11 @@ namespace VzaarApi
 
 				if (value == null)
 				{
-
 					if (Parameters.ContainsKey(index))
 						Parameters.Remove(index);
-
 				}
 				else
 				{
-
 					if (Parameters.ContainsKey(index))
 						Parameters.Remove(index);
 
@@ -123,15 +101,11 @@ namespace VzaarApi
 				}
 
 				cache = JObject.Parse(JsonConvert.SerializeObject(Parameters));
-
 			}
-
 		}
 
-
-		public virtual void UpdateRecord(string json)
+		internal void UpdateRecord(string json)
 		{
-
 			// reset body parameters
 			Parameters = new Dictionary<string, object>();
 			cache = new JObject();
@@ -140,125 +114,95 @@ namespace VzaarApi
 			Data = JObject.Parse(json);
 
 			//validate data object
-			JToken token;
-			if (Data.TryGetValue("data", out token) == false)
+			if (!Data.TryGetValue("data", out _))
 				throw new VzaarApiException("Received data malformed: Missing 'data' token");
-
 		}
 
-		public virtual void Create(Dictionary<string, object> tokens)
+		internal async Task Create(Dictionary<string, object> tokens)
 		{
-
 			string body = JsonConvert.SerializeObject(tokens);
-			var task = RecordClient.HttpPostAsync(RecordEndpoint, body);
-			task.Wait();
+			var responseJson = await RecordClient.HttpPostAsync(RecordEndpoint, body);
 
-			UpdateRecord(task.Result);
+			UpdateRecord(responseJson);
 		}
 
-		public virtual void Create(Dictionary<string, object> tokens, string subEndpoint = null, string filepath = null)
+		internal async Task Create(Dictionary<string, object> tokens, string subEndpoint = null, string filepath = null)
 		{
-
 			string endpoint = RecordEndpoint;
 
 			if (subEndpoint != null)
-			{
 				endpoint += subEndpoint;
-			}
 
 			if (filepath == null)
 			{
 				string body = JsonConvert.SerializeObject(tokens);
-				var task = RecordClient.HttpPostAsync(endpoint, body);
-				task.Wait();
+				var responseJson = await RecordClient.HttpPostAsync(endpoint, body);
 
-				UpdateRecord(task.Result);
+				UpdateRecord(responseJson);
 			}
 			else
 			{
-
-				Dictionary<string, string> postFields = new Dictionary<string, string>();
-				foreach (KeyValuePair<string, object> entry in tokens)
-				{
+				var postFields = new Dictionary<string, string>();
+				foreach (var entry in tokens)
 					postFields.Add(entry.Key, entry.Value.ToString());
-				}
 
-				var task = RecordClient.HttpPostFormAsync(endpoint, filepath, postFields);
-				task.Wait();
+				var responseJson = await RecordClient.HttpPostFormAsync(endpoint, filepath, postFields);
 
-				UpdateRecord(task.Result);
+				UpdateRecord(responseJson);
 			}
 		}
 
-		public virtual void Read(long id)
+		internal async Task Read(long id)
 		{
+			string endpoint = RecordEndpoint + "/" + id;
 
-			string endpoint = RecordEndpoint + "/" + id.ToString();
+			var responseJson = await RecordClient.HttpGetAsync(endpoint, new Dictionary<string, string>());
 
-			var task = RecordClient.HttpGetAsync(endpoint, new Dictionary<string, string>());
-			task.Wait();
-
-			UpdateRecord(task.Result);
+			UpdateRecord(responseJson);
 		}
 
-
-		public virtual void Update(Dictionary<string, object> tokens, string subEndpoint = null, string filepath = null)
+		internal async Task Update(Dictionary<string, object> tokens, string subEndpoint = null, string filepath = null)
 		{
-
-			string endpoint = RecordEndpoint + "/" + this["id"].ToString();
+			string endpoint = RecordEndpoint + "/" + this["id"];
 
 			if (subEndpoint != null)
-			{
 				endpoint += subEndpoint;
-			}
 
 			if (filepath == null)
 			{
-
 				string body = JsonConvert.SerializeObject(tokens);
 
-				var task = RecordClient.HttpPatchAsync(endpoint, body);
-				task.Wait();
+				var responseJson = await RecordClient.HttpPatchAsync(endpoint, body);
 
-				UpdateRecord(task.Result);
-
+				UpdateRecord(responseJson);
 			}
 			else
 			{
-
-				Dictionary<string, string> postFields = new Dictionary<string, string>();
-				foreach (KeyValuePair<string, object> entry in tokens)
-				{
+				var postFields = new Dictionary<string, string>();
+				foreach (var entry in tokens)
 					postFields.Add(entry.Key, entry.Value.ToString());
-				}
 
-				var task = RecordClient.HttpPatchFormAsync(endpoint, filepath, postFields);
-				task.Wait();
+				var responseJson = await RecordClient.HttpPatchFormAsync(endpoint, filepath, postFields);
 
-				UpdateRecord(task.Result);
-
+				UpdateRecord(responseJson);
 			}
 		}
 
-		public virtual void Update()
+		internal async Task Update()
 		{
-
-			string endpoint = RecordEndpoint + "/" + this["id"].ToString();
+			string endpoint = RecordEndpoint + "/" + this["id"];
 			string body = JsonConvert.SerializeObject(cache);
 
-			var task = RecordClient.HttpPatchAsync(endpoint, body);
-			task.Wait();
+			var responseJson = await RecordClient.HttpPatchAsync(endpoint, body);
 
-			UpdateRecord(task.Result);
+			UpdateRecord(responseJson);
 		}
 
-		public virtual void Delete()
+		internal async Task Delete()
 		{
+			string endpoint = RecordEndpoint + "/" + this["id"];
 
-			string endpoint = RecordEndpoint + "/" + this["id"].ToString();
-
-			var task = RecordClient.HttpDeleteAsync(endpoint);
-			task.Wait();
+			await RecordClient.HttpDeleteAsync(endpoint);
 
 			UpdateRecord(empty_record);
 		}

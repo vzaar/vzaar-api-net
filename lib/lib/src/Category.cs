@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -51,11 +52,21 @@ namespace VzaarApi
 
 		public static Category Find(long id, Client client)
 		{
-			var category = new Category(client);
+			return FindAsync(id, client).Result;
+		}
 
-			category.record.Read(id);
+		public static Task<Category> FindAsync(long id)
+		{
+			return FindAsync(id, Client.GetClient());
+		}
 
-			return category;
+		public static async Task<Category> FindAsync(long id, Client client)
+		{
+			var item = new Category(client);
+
+			await item.record.Read(id).ConfigureAwait(false);
+
+			return item;
 		}
 
 		//create
@@ -66,28 +77,53 @@ namespace VzaarApi
 
 		public static Category Create(Dictionary<string, object> tokens, Client client)
 		{
-			var category = new Category(client);
+			return CreateAsync(tokens, client).Result;
+		}
 
-			category.record.Create(tokens);
+		public static Task<Category> CreateAsync(Dictionary<string, object> tokens)
+		{
+			return CreateAsync(tokens, Client.GetClient());
+		}
 
-			return category;
+		public static async Task<Category> CreateAsync(Dictionary<string, object> tokens, Client client)
+		{
+			var resource = new Category(client);
+
+			await resource.record.Create(tokens).ConfigureAwait(false);
+
+			return resource;
 		}
 
 		//update
 		public virtual void Save()
 		{
-			record.Update();
+			SaveAsync().Wait();
 		}
 
 		public virtual void Save(Dictionary<string, object> tokens)
 		{
-			record.Update(tokens);
+			SaveAsync(tokens).Wait();
+		}
+
+		public virtual async Task SaveAsync()
+		{
+			await record.Update().ConfigureAwait(false);
+		}
+
+		public virtual async Task SaveAsync(Dictionary<string, object> tokens)
+		{
+			await record.Update(tokens).ConfigureAwait(false);
 		}
 
 		//delete
 		public virtual void Delete()
 		{
-			record.Delete();
+			DeleteAsync().Wait();
+		}
+
+		public virtual async Task DeleteAsync()
+		{
+			await record.Delete().ConfigureAwait(false);
 		}
 	}
 }

@@ -1,4 +1,6 @@
-﻿namespace VzaarApi
+﻿using System.Threading.Tasks;
+
+namespace VzaarApi
 {
 	public class Preset : BaseResource
 	{
@@ -35,12 +37,21 @@
 
 		public static Preset Find(long id, Client client)
 		{
+			return FindAsync(id, client).Result;
+		}
 
-			var preset = new Preset(client);
+		public static Task<Preset> FindAsync(long id)
+		{
+			return FindAsync(id, Client.GetClient());
+		}
 
-			preset.record.Read(id);
+		public static async Task<Preset> FindAsync(long id, Client client)
+		{
+			var resource = new Preset(client);
 
-			return preset;
+			await resource.record.Read(id).ConfigureAwait(false);
+
+			return resource;
 		}
 	}
 }

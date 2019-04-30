@@ -6,7 +6,8 @@ using VzaarApi;
 
 namespace tests
 {
-	internal enum MockResponse {
+	internal enum MockResponse
+	{
 		MissingData,
 		DataNotArray,
 		MissingMeta,
@@ -32,146 +33,150 @@ namespace tests
 		Playlist,
 		PlaylistsList
 	}
-		
+
 	internal class ClientMock : Client
 	{
 		internal MockResponse responseType;
-		public ClientMock (MockResponse type)
+		public ClientMock(MockResponse type)
 		{
-			responseType = type;	
+			responseType = type;
 		}
 
-		internal override async Task<string> HttpSendAsync(HttpRequestMessage msg) {
-
-			var response = new HttpResponseMessage (HttpStatusCode.OK);
-			response.Headers.Add("X-RateLimit-Limit","222");
-			response.Headers.Add("X-RateLimit-Remaining","122");
-			response.Headers.Add("X-RateLimit-Reset","33333");
+		internal override Task<string> HttpSendAsync(HttpRequestMessage msg)
+		{
+			var response = new HttpResponseMessage(HttpStatusCode.OK);
+			response.Headers.Add("X-RateLimit-Limit", "222");
+			response.Headers.Add("X-RateLimit-Remaining", "122");
+			response.Headers.Add("X-RateLimit-Reset", "33333");
 
 			httpHeaders = response.Headers;
 
 			var uri = msg.RequestUri.AbsoluteUri;
 
-
-			if (uri.Contains ("/videos") && msg.Method == HttpMethod.Post)
+			if (uri.Contains("/videos") && msg.Method == HttpMethod.Post)
 				responseType = MockResponse.Video;
 
-			if (uri.Contains ("/signature") && msg.Method == HttpMethod.Post) {
-
-				if(responseType != MockResponse.SignatureFailed)
+			if (uri.Contains("/signature") && msg.Method == HttpMethod.Post)
+			{
+				if (responseType != MockResponse.SignatureFailed)
 					responseType = MockResponse.Signature;
-				
 			}
 
 			var content = @"{}";
 
-			switch (responseType) {
-			case MockResponse.MissingData:
-				content = missing_data;
-				break;
-			case MockResponse.DataNotArray:
-				content = data_not_array;
-				break;
-			case MockResponse.MissingMeta:
-				content = missing_meta;
-				break;
-			case MockResponse.MissingLinks:
-				content = missing_links;
-				break;
-			case MockResponse.MissingFirst:
-				content = missing_first;
-				break;
-			case MockResponse.MissingLast:
-				content = missing_last;
-				break;
-			case MockResponse.MissingNext:
-				content = missing_next;
-				break;
-			case MockResponse.MissingPrevious:
-				content = missing_previous;
-				break;
-			case MockResponse.RecordPaginate:
-				content = record_paginate;
-				break;
-			case MockResponse.RecordPaginateEmpty:
-				content = record_paginate_empty;
-				break;
-			case MockResponse.MissingId:
-				content = missing_id;
-				break;
-			case MockResponse.Recipe:
-				content = recipe;
-				break;
-			case MockResponse.RecipesList:
-				content = recipesList_base;
-				if (msg.RequestUri.Query != "")
-					content = recipesList_query;
-				break;
-			case MockResponse.Preset:
-				content = preset;
-				break;
-			case MockResponse.PresetsList:
-				content = presetsList_base;
-				if (msg.RequestUri.Query != "")
-					content = presetsList_query;
-				break;
-			case MockResponse.CategoriesList:
-				content = categoriesList_base;
-				if (msg.RequestUri.Query != "")
-					content = categoriesList_query;
-				break;
-			case MockResponse.Category:
-				content = category;
-				if (msg.RequestUri.AbsoluteUri.Contains ("subtree"))
+			switch (responseType)
+			{
+				case MockResponse.MissingData:
+					content = missing_data;
+					break;
+				case MockResponse.DataNotArray:
+					content = data_not_array;
+					break;
+				case MockResponse.MissingMeta:
+					content = missing_meta;
+					break;
+				case MockResponse.MissingLinks:
+					content = missing_links;
+					break;
+				case MockResponse.MissingFirst:
+					content = missing_first;
+					break;
+				case MockResponse.MissingLast:
+					content = missing_last;
+					break;
+				case MockResponse.MissingNext:
+					content = missing_next;
+					break;
+				case MockResponse.MissingPrevious:
+					content = missing_previous;
+					break;
+				case MockResponse.RecordPaginate:
+					content = record_paginate;
+					break;
+				case MockResponse.RecordPaginateEmpty:
+					content = record_paginate_empty;
+					break;
+				case MockResponse.MissingId:
+					content = missing_id;
+					break;
+				case MockResponse.Recipe:
+					content = recipe;
+					break;
+				case MockResponse.RecipesList:
+					content = recipesList_base;
+					if (msg.RequestUri.Query != "")
+						content = recipesList_query;
+					break;
+				case MockResponse.Preset:
+					content = preset;
+					break;
+				case MockResponse.PresetsList:
+					content = presetsList_base;
+					if (msg.RequestUri.Query != "")
+						content = presetsList_query;
+					break;
+				case MockResponse.CategoriesList:
 					content = categoriesList_base;
-				break;
-			case MockResponse.Video:
-				content = video;
-				if(msg.RequestUri.AbsoluteUri.Contains ("subtitles/26548") && (msg.Method == HttpMethod.Post || msg.Method == new HttpMethod("PATCH"))){
-					content = subtitle_update;
-				} 
-				else if (msg.RequestUri.AbsoluteUri.Contains ("subtitles/26548") && msg.Method == HttpMethod.Delete) {
+					if (msg.RequestUri.Query != "")
+						content = categoriesList_query;
+					break;
+				case MockResponse.Category:
+					content = category;
+					if (msg.RequestUri.AbsoluteUri.Contains("subtree"))
+						content = categoriesList_base;
+					break;
+				case MockResponse.Video:
+					content = video;
+					if (msg.RequestUri.AbsoluteUri.Contains("subtitles/26548") && (msg.Method == HttpMethod.Post || msg.Method == new HttpMethod("PATCH")))
+					{
+						content = subtitle_update;
+					}
+					else if (msg.RequestUri.AbsoluteUri.Contains("subtitles/26548") && msg.Method == HttpMethod.Delete)
+					{
+						content = "";
+					}
+					else if (msg.RequestUri.AbsoluteUri.Contains("subtitles") && msg.Method == HttpMethod.Get)
+					{
+						content = subtitles_list;
+					}
+					else if (msg.RequestUri.AbsoluteUri.Contains("subtitles"))
+					{
+						content = subtitle;
+					}
+					break;
+				case MockResponse.Signature:
 					content = "";
-				}
-				else if(msg.RequestUri.AbsoluteUri.Contains ("subtitles") && msg.Method == HttpMethod.Get){
-					content = subtitles_list;
-				}
-				else if(msg.RequestUri.AbsoluteUri.Contains ("subtitles")){
-					content = subtitle;
-				}
-				break;
-			case MockResponse.Signature:
-				content = "";
-				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/single/2"))
-					content = signature_single;
+					if (msg.RequestUri.AbsolutePath.Equals("/api/v2/signature/single/2"))
+						content = signature_single;
 
-				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/multipart/2"))
-					content = signature_multipart;
-				break;
-			case MockResponse.SignatureFailed:
-				content = "";
-				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/single/2"))
-					content = signature_single_failed;
+					if (msg.RequestUri.AbsolutePath.Equals("/api/v2/signature/multipart/2"))
+						content = signature_multipart;
 
-				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/multipart/2"))
-					content = signature_multipart_failed;
-				break;
-			case MockResponse.VideosList:
-				content = videosList_base;
-				if (msg.RequestUri.Query != "")
-					content = videosList_query;
-				break;
-			case MockResponse.Playlist:
-				content = playlist;
-				break;
-			case MockResponse.PlaylistsList:
-				content = playlistsList_base;
-				if (msg.RequestUri.Query != "")
-					content = playlistsList_query;
-				break;
+					break;
+				case MockResponse.SignatureFailed:
+					content = "";
+					if (msg.RequestUri.AbsolutePath.Equals("/v2/signature/single/2"))
+						content = signature_single_failed;
+
+					if (msg.RequestUri.AbsolutePath.Equals("/v2/signature/multipart/2"))
+						content = signature_multipart_failed;
+					break;
+				case MockResponse.VideosList:
+					content = videosList_base;
+					if (msg.RequestUri.Query != "")
+						content = videosList_query;
+					break;
+				case MockResponse.Playlist:
+					content = playlist;
+					break;
+				case MockResponse.PlaylistsList:
+					content = playlistsList_base;
+					if (msg.RequestUri.Query != "")
+						content = playlistsList_query;
+					break;
 			}
-				
-			return content;
+
+			return Task.FromResult(content);
 		}
 
 		string record_paginate = @"{
@@ -238,7 +243,7 @@ namespace tests
                     	}
                 	}
 				}";
-		
+
 		string missing_previous = @"{
                 ""data"": [
                 {
@@ -301,7 +306,7 @@ namespace tests
                     	}
                 	}
 				}";
-		
+
 		string missing_links = @"{
                 ""data"": [
                 {
@@ -364,9 +369,9 @@ namespace tests
                 ]
             }";
 
-		string missing_id =  @"{'data':{ 'name': 'Ingest recipe 1'}}";
+		string missing_id = @"{'data':{ 'name': 'Ingest recipe 1'}}";
 
-		string recipe =  @"{'data':{'id':1, 'name': 'Ingest recipe 1', 'multipass': false}}";
+		string recipe = @"{'data':{'id':1, 'name': 'Ingest recipe 1', 'multipass': false}}";
 
 		string recipesList_base = @"{
                 ""data"": [
@@ -819,7 +824,7 @@ namespace tests
                     ""parts"": 4
                 }
             }";
-		
+
 		string videosList_base = @"{
 				  ""data"": [
 				    {
@@ -1050,7 +1055,7 @@ namespace tests
 			  }
 			}";
 
-			string subtitle = @"{
+		string subtitle = @"{
 			  ""data"": {
 			    ""id"": 26548,
 			    ""language"": ""English"",
@@ -1061,8 +1066,8 @@ namespace tests
 			    ""updated_at"": ""2018-11-27T14:53:24.120Z""
 			  }
 			}";
-			
-			string subtitle_update = @"{
+
+		string subtitle_update = @"{
 			  ""data"": {
 			    ""id"": 26548,
 			    ""language"": ""English"",
@@ -1074,7 +1079,7 @@ namespace tests
 			  }
 			}";
 
-			string subtitles_list = @"{
+		string subtitles_list = @"{
 				""data"": [
 					{
 						""id"": 26319,

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -29,9 +30,19 @@ namespace VzaarApi
 
 		public static Signature Create(string filepath, Client client)
 		{
+			return CreateAsync(filepath, client).Result;
+		}
+
+		public static Task<Signature> CreateAsync(string filepath)
+		{
+			return CreateAsync(filepath, Client.GetClient());
+		}
+
+		public static async Task<Signature> CreateAsync(string filepath, Client client)
+		{
 			var signature = new Signature(client);
 
-			signature.CreateFromFile(filepath);
+			await signature.CreateFromFile(filepath).ConfigureAwait(false);
 
 			return signature;
 		}
@@ -53,9 +64,29 @@ namespace VzaarApi
 
 		public static Signature Single(Dictionary<string, object> tokens, Client client)
 		{
+			return SingleAsync(tokens, client).Result;
+		}
+
+		public static Task<Signature> SingleAsync()
+		{
+			return SingleAsync(new Dictionary<string, object>(), Client.GetClient());
+		}
+
+		public static Task<Signature> SingleAsync(Client client)
+		{
+			return SingleAsync(new Dictionary<string, object>(), client);
+		}
+
+		public static Task<Signature> SingleAsync(Dictionary<string, object> tokens)
+		{
+			return SingleAsync(tokens, Client.GetClient());
+		}
+
+		public static async Task<Signature> SingleAsync(Dictionary<string, object> tokens, Client client)
+		{
 			var signature = new Signature(client);
 
-			signature.CreateSingle(tokens);
+			await signature.CreateSingleAsync(tokens).ConfigureAwait(false);
 
 			return signature;
 		}
@@ -67,41 +98,50 @@ namespace VzaarApi
 
 		public static Signature Multipart(Dictionary<string, object> tokens, Client client)
 		{
+			return MultipartAsync(tokens, client).Result;
+		}
+
+		public static Task<Signature> MultipartAsync(Dictionary<string, object> tokens)
+		{
+			return MultipartAsync(tokens, Client.GetClient());
+		}
+
+		public static async Task<Signature> MultipartAsync(Dictionary<string, object> tokens, Client client)
+		{
 			var signature = new Signature(client);
 
-			signature.CreateMultipart(tokens);
+			await signature.CreateMultipartAsync(tokens).ConfigureAwait(false);
 
 			return signature;
 		}
 
-		private void CreateSingle(Dictionary<string, object> tokens)
+		private async Task CreateSingleAsync(Dictionary<string, object> tokens)
 		{
 			if (tokens.ContainsKey("uploader") == false)
 				tokens.Add("uploader", Client.UPLOADER + Client.VERSION);
 
 			string path = "/single/2";
 
-			record.Create(tokens, path);
+			await record.Create(tokens, path);
 		}
 
-		private void CreateMultipart(Dictionary<string, object> tokens)
+		private async Task CreateMultipartAsync(Dictionary<string, object> tokens)
 		{
 			if (tokens.ContainsKey("uploader") == false)
 				tokens.Add("uploader", Client.UPLOADER + Client.VERSION);
 
 			string path = "/multipart/2";
 
-			record.Create(tokens, path);
+			await record.Create(tokens, path);
 		}
 
-		private void CreateFromFile(string filepath)
+		private async Task CreateFromFile(string filepath)
 		{
-			FileInfo file = new FileInfo(filepath);
-
-			if (file.Exists == false)
+			var file = new FileInfo(filepath);
+			if (!file.Exists)
 				throw new VzaarApiException("File does not exist: " + filepath);
 
-			Dictionary<string, object> tokens = new Dictionary<string, object>();
+			var tokens = new Dictionary<string, object>();
 
 			string filename = file.Name;
 			long filesize = file.Length;
@@ -110,9 +150,9 @@ namespace VzaarApi
 			tokens.Add("filesize", filesize);
 
 			if (filesize >= Client.MULTIPART_MIN_SIZE)
-				CreateMultipart(tokens);
+				await CreateMultipartAsync(tokens);
 			else
-				CreateSingle(tokens);
+				await CreateSingleAsync(tokens);
 		}
 	}
 }

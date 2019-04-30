@@ -16,7 +16,6 @@ namespace VzaarApi
 {
 	public class Client
 	{
-
 		public static string url = "https://api.vzaar.com/api/";
 		public static string client_id = "id";
 		public static string auth_token = "token";
@@ -64,46 +63,31 @@ namespace VzaarApi
 			return new Client();
 		}
 
-		public string RateLimit
-		{
+		public string RateLimit => CheckRates("X-RateLimit-Limit");
 
-			get { return CheckRates("X-RateLimit-Limit"); }
-		}
+		public string RateRemaining => CheckRates("X-RateLimit-Remaining");
 
-		public string RateRemaining
-		{
-
-			get { return CheckRates("X-RateLimit-Remaining"); }
-		}
-
-		public string RateReset
-		{
-
-			get { return CheckRates("X-RateLimit-Reset"); }
-		}
+		public string RateReset => CheckRates("X-RateLimit-Reset");
 
 		internal string CheckRates(string key)
 		{
-
-			IEnumerable<string> header;
-
 			string value = string.Empty;
-			if (httpHeaders.TryGetValues(key, out header))
-			{
+			if (httpHeaders.TryGetValues(key, out var header))
 				value = header.FirstOrDefault();
-			}
+
 			return value;
 		}
 
 		internal async Task<string> HttpGetAsync(string endpoint, Dictionary<string, string> query)
 		{
-
 			Uri httpUri = BuildUri(endpoint);
 			httpUri = BuildQuery(httpUri, query);
 
-			HttpRequestMessage msg = new HttpRequestMessage();
-			msg.RequestUri = httpUri;
-			msg.Method = HttpMethod.Get;
+			var msg = new HttpRequestMessage
+			{
+				RequestUri = httpUri,
+				Method = HttpMethod.Get
+			};
 
 			var jsonResponse = await HttpSendAsync(msg);
 
@@ -112,14 +96,15 @@ namespace VzaarApi
 
 		internal async Task<string> HttpPostAsync(string path, string body)
 		{
-
 			Uri httpUri = BuildUri(path);
 
-			HttpRequestMessage msg = new HttpRequestMessage();
-			msg.RequestUri = httpUri;
-			msg.Method = HttpMethod.Post;
+			var msg = new HttpRequestMessage
+			{
+				RequestUri = httpUri,
+				Method = HttpMethod.Post
+			};
 
-			StringContent content = new StringContent(body);
+			var content = new StringContent(body);
 			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
 			msg.Content = content;
@@ -131,14 +116,15 @@ namespace VzaarApi
 
 		internal async Task<string> HttpPatchAsync(string path, string body)
 		{
-
 			Uri httpUri = BuildUri(path);
 
-			HttpRequestMessage msg = new HttpRequestMessage();
-			msg.RequestUri = httpUri;
-			msg.Method = new HttpMethod("PATCH");
+			var msg = new HttpRequestMessage
+			{
+				RequestUri = httpUri,
+				Method = new HttpMethod("PATCH")
+			};
 
-			StringContent content = new StringContent(body);
+			var content = new StringContent(body);
 			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
 			msg.Content = content;
@@ -151,12 +137,13 @@ namespace VzaarApi
 
 		internal async Task HttpDeleteAsync(string path)
 		{
-
 			Uri httpUri = BuildUri(path);
 
-			HttpRequestMessage msg = new HttpRequestMessage();
-			msg.RequestUri = httpUri;
-			msg.Method = HttpMethod.Delete;
+			HttpRequestMessage msg = new HttpRequestMessage
+			{
+				RequestUri = httpUri,
+				Method = HttpMethod.Delete
+			};
 
 			await HttpSendAsync(msg);
 
@@ -164,26 +151,23 @@ namespace VzaarApi
 			//no return value needed
 		}
 
-		internal async virtual Task<string> HttpSendAsync(HttpRequestMessage msg)
+		internal virtual async Task<string> HttpSendAsync(HttpRequestMessage msg)
 		{
-
-			if (CfgUrlAuth == true)
+			if (CfgUrlAuth)
 			{
+				var query = new Dictionary<string, string>
+				{
+					{"client_id", client_id},
+					{ "auth_token", auth_token}
+				};
 
-				Dictionary<string, string> query = new Dictionary<string, string>();
-				query.Add("client_id", client_id);
-				query.Add("auth_token", auth_token);
-
-				Uri uri = BuildQuery(msg.RequestUri, query);
+				var uri = BuildQuery(msg.RequestUri, query);
 				msg.RequestUri = uri;
-
 			}
 			else
 			{
-
 				msg.Headers.Add("X-Client-Id", client_id);
 				msg.Headers.Add("X-Auth-Token", auth_token);
-
 			}
 
 #if DEBUG
@@ -201,9 +185,9 @@ namespace VzaarApi
 			}
 #endif
 
-			HttpResponseMessage response = await this.httpClient.SendAsync(msg);
+			var response = await httpClient.SendAsync(msg);
 
-			ValidateHttpResponse(response);
+			await ValidateHttpResponse(response);
 
 			httpHeaders = response.Headers;
 
@@ -212,7 +196,7 @@ namespace VzaarApi
 			return bodyResponse;
 		}
 
-		internal void ValidateHttpResponse(HttpResponseMessage response)
+		internal async Task ValidateHttpResponse(HttpResponseMessage response)
 		{
 
 #if DEBUG
@@ -246,106 +230,84 @@ namespace VzaarApi
 				case (HttpStatusCode)429: //Too many Requests
 				case HttpStatusCode.InternalServerError:
 
-					var task = response.Content.ReadAsStringAsync();
-					task.Wait();
-
-					var error = task.Result;
-
-					string message = "StatusCode: " + response.StatusCode.ToString() + "\r\n";
+					var error = await response.Content.ReadAsStringAsync();
+					var message = "StatusCode: " + response.StatusCode + "\r\n";
 					message += error;
 
 					throw new VzaarApiException(message);
 
 				default:
-					string unknown = "Unknown response. StatusCode: " + response.StatusCode.ToString();
+					string unknown = "Unknown response. StatusCode: " + response.StatusCode;
 					throw new VzaarApiException(unknown);
 			}
 		}
 
 		internal async Task HttpPostS3Async(string filepath, Signature signature)
 		{
-			FileInfo file = new FileInfo(filepath);
-
-			if (file.Exists == false)
-			{
+			var file = new FileInfo(filepath);
+			if (!file.Exists)
 				throw new VzaarApiException("File does not exsist: " + filepath);
-			}
 
-			string hostname = (string)signature["upload_hostname"];
+			var hostname = (string)signature["upload_hostname"];
 
 			//move signature to Dictionary
-			Dictionary<string, string> postFields = new Dictionary<string, string>();
+			var postFields = new Dictionary<string, string>
+			{
+				{"x-amz-credential", (string) signature["x-amz-credential"]},
+				{"x-amz-algorithm", (string) signature["x-amz-algorithm"]},
+				{"x-amz-date", (string) signature["x-amz-date"]},
+				{"x-amz-signature", (string) signature["x-amz-signature"]},
+				{"x-amz-meta-uploader", Client.UPLOADER + Client.VERSION},
+				{"acl", (string) signature["acl"]},
+				{"bucket", (string) signature["bucket"]},
+				{"policy", (string) signature["policy"]},
+				{"success_action_status", (string) signature["success_action_status"]}
+			};
 
-
-			postFields.Add("x-amz-credential", (string)signature["x-amz-credential"]);
-			postFields.Add("x-amz-algorithm", (string)signature["x-amz-algorithm"]);
-			postFields.Add("x-amz-date", (string)signature["x-amz-date"]);
-			postFields.Add("x-amz-signature", (string)signature["x-amz-signature"]);
-			postFields.Add("x-amz-meta-uploader", Client.UPLOADER + Client.VERSION);
-			postFields.Add("acl", (string)signature["acl"]);
-			postFields.Add("bucket", (string)signature["bucket"]);
-			postFields.Add("policy", (string)signature["policy"]);
-			postFields.Add("success_action_status", (string)signature["success_action_status"]);
-
-			string key = (string)signature["key"];
-			string fileKey = "";
-			if (String.IsNullOrEmpty(key) == false)
+			var key = (string)signature["key"];
+			var fileKey = "";
+			if (string.IsNullOrEmpty(key) == false)
 				fileKey = key.Replace("${filename}", file.Name);
 
 			postFields.Add("key", fileKey);
-
 
 			long? parts = signature["parts"] as long?;
 
 			if (parts == null)
 			{
-
 				//upload file in POST form
-				FileStream fileStream;
-				using (fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
+				using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 				{
-
 					await HttpPostMfdcAsync(hostname, file.Name, postFields, fileStream);
 					// response is validated in the HttpPostMfdcAsync
 				}
-
 			}
 			else
 			{
-
-				string keyCache = postFields["key"];
-
-				long chunk = 0;
-
 				if (signature["part_size_in_bytes"] == null)
 					throw new VzaarApiException("File Upload: not valid 'part_size_in_bytes'");
 
-				int chunkSize = Convert.ToInt32((long)signature["part_size_in_bytes"]);
-				byte[] buffer = new byte[chunkSize];
+				var chunkSize = Convert.ToInt32((long)signature["part_size_in_bytes"]);
+				var buffer = new byte[chunkSize];
 
-				int bytesCount;
-
-				FileStream fileStream;
-				using (fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
+				var keyCache = postFields["key"];
+				long chunk = 0;
+				using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 				{
-
+					int bytesCount;
 					while ((bytesCount = await fileStream.ReadAsync(buffer, 0, chunkSize)) != 0)
 					{
-
-						string chunkKey = keyCache + "." + chunk.ToString();
+						string chunkKey = keyCache + "." + chunk;
 						postFields.Remove("key");
 						postFields.Add("key", chunkKey);
 
-						MemoryStream chunkStream;
-						using (chunkStream = new MemoryStream(buffer, 0, bytesCount))
+						using (var chunkStream = new MemoryStream(buffer, 0, bytesCount))
 						{
-
 							await HttpPostMfdcAsync(hostname, file.Name, postFields, chunkStream);
-
 							// response is validated in the HttpPostMfdcAsync
 						}
 
-						VideoUploadProgressEventArgs progress = new VideoUploadProgressEventArgs()
+						var progress = new VideoUploadProgressEventArgs()
 						{
 							totalParts = (long)parts,
 							uploadedChunk = chunk
@@ -356,97 +318,60 @@ namespace VzaarApi
 						chunk++;
 					}
 				}
-
 			}
-
 		}
 
 		internal async Task<string> HttpPostFormAsync(string endpoint, string filepath, Dictionary<string, string> postFields)
 		{
-			FileInfo file = new FileInfo(filepath);
-
-			if (file.Exists == false)
-			{
+			var file = new FileInfo(filepath);
+			if (!file.Exists)
 				throw new VzaarApiException("File does not exsist: " + filepath);
-			}
 
 			//change the filepath in Dictionary to filename
-			Dictionary<string, string> fields = new Dictionary<string, string>();
+			var fields = new Dictionary<string, string>();
 			foreach (var item in postFields)
-			{
-
-				if (item.Value == filepath)
-				{
-					fields.Add(item.Key, file.Name);
-				}
-				else
-				{
-					fields.Add(item.Key, item.Value);
-				}
-
-			}
+				fields.Add(item.Key, item.Value == filepath ? file.Name : item.Value);
 
 			//upload file in POST form
-			HttpMethod httpMethod = HttpMethod.Post;
-			FileStream fileStream;
-			using (fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
+			var httpMethod = HttpMethod.Post;
+			using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 			{
-
-				var jsonResponse = await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream);
+				return await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream);
 				// response is validated in the HttpPostMfdcAsync
-
-				return jsonResponse;
 			}
 		}
 
 		internal async Task<string> HttpPatchFormAsync(string endpoint, string filepath, Dictionary<string, string> postFields)
 		{
-			FileInfo file = new FileInfo(filepath);
-
-			if (file.Exists == false)
-			{
+			var file = new FileInfo(filepath);
+			if (!file.Exists)
 				throw new VzaarApiException("File does not exsist: " + filepath);
-			}
 
 			//change the filepath in Dictionary to filename
-			Dictionary<string, string> fields = new Dictionary<string, string>();
+			var fields = new Dictionary<string, string>();
 			foreach (var item in postFields)
-			{
-
-				if (item.Value == filepath)
-				{
-					fields.Add(item.Key, file.Name);
-				}
-				else
-				{
-					fields.Add(item.Key, item.Value);
-				}
-
-			}
+				fields.Add(item.Key, item.Value == filepath ? file.Name : item.Value);
 
 			//upload file in PATCH method
-			HttpMethod httpMethod = new HttpMethod("PATCH");
-			FileStream fileStream;
-			using (fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
+			var httpMethod = new HttpMethod("PATCH");
+			using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 			{
-
-				var jsonResponse = await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream);
+				return await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream);
 				// response is validated in the HttpPostMfdcAsync
-
-				return jsonResponse;
 			}
 		}
 
 		internal virtual async Task<string> HttpSendMfdcAsync(HttpMethod httpMethod, string endpoint, string filename, Dictionary<string, string> fields, Stream stream)
 		{
+			var httpUri = BuildUri(endpoint);
 
-			Uri httpUri = BuildUri(endpoint);
+			var msg = new HttpRequestMessage
+			{
+				RequestUri = httpUri,
+				Method = httpMethod
+			};
 
-			HttpRequestMessage msg = new HttpRequestMessage();
-			msg.RequestUri = httpUri;
-			msg.Method = httpMethod;
-
-			MultipartFormDataContent mfdc = new MultipartFormDataContent();
+			var mfdc = new MultipartFormDataContent();
 
 			//data in POST form
 			StringContent postField;
@@ -459,17 +384,13 @@ namespace VzaarApi
 			Debug.WriteLine(msg.Headers.ToString().Trim());
 			Debug.WriteLine("Request Content");
 
-
 			string fileField = ""; //get the post Field name for the file
 			foreach (var item in fields)
 			{
-
 				if (item.Value != filename)
 				{
-
 					postField = new StringContent(item.Value);
 					mfdc.Add(postField, '"' + item.Key + '"');
-
 				}
 				else
 				{
@@ -486,19 +407,18 @@ namespace VzaarApi
 
 			msg.Content = mfdc;
 
-			var jsonResponse = await HttpSendAsync(msg);
-
-			return jsonResponse;
+			return await HttpSendAsync(msg);
 		}
 
 		internal virtual async Task HttpPostMfdcAsync(string hostname, string filename, Dictionary<string, string> fields, Stream stream)
 		{
+			var msg = new HttpRequestMessage
+			{
+				RequestUri = new Uri(hostname),
+				Method = HttpMethod.Post
+			};
 
-			HttpRequestMessage msg = new HttpRequestMessage();
-			msg.RequestUri = new Uri(hostname);
-			msg.Method = HttpMethod.Post;
-
-			MultipartFormDataContent mfdc = new MultipartFormDataContent();
+			var mfdc = new MultipartFormDataContent();
 
 			//upload signature data in POST form
 			StringContent postField;
@@ -519,7 +439,7 @@ namespace VzaarApi
 				Debug.WriteLine(item.Key + ": " + item.Value);
 			}
 
-			StreamContent postFile = new StreamContent(stream);
+			var postFile = new StreamContent(stream);
 			postFile.Headers.ContentType = new MediaTypeHeaderValue("binary/octet-stream");
 			mfdc.Add(postFile, "file", filename);
 
@@ -529,20 +449,15 @@ namespace VzaarApi
 
 			var response = await this.httpClient.SendAsync(msg);
 
-			ValidateS3Response(response);
+			await ValidateS3Response(response);
 		}
 
-		internal void ValidateS3Response(HttpResponseMessage response)
+		internal async Task ValidateS3Response(HttpResponseMessage response)
 		{
-
 			string bodyResponse = "";
 
 			if (response.Content != null)
-			{
-				var task = response.Content.ReadAsStringAsync();
-				task.Wait();
-				bodyResponse = task.Result;
-			}
+				bodyResponse = await response.Content.ReadAsStringAsync();
 
 			Debug.WriteLine("Response StatusCode");
 			Debug.WriteLine(response.StatusCode + ": " + (int)response.StatusCode);
@@ -551,40 +466,34 @@ namespace VzaarApi
 			Debug.WriteLine("Response Content");
 			Debug.WriteLine(bodyResponse);
 
-
 			switch (response.StatusCode)
 			{
 				case HttpStatusCode.Created:
 					break;
 				default:
-					string message = "StatusCode: " + response.StatusCode.ToString() + "\r\n";
+					var message = "StatusCode: " + response.StatusCode + "\r\n";
 					message += bodyResponse;
 
 					throw new VzaarApiException(message);
 			}
-
 		}
 
 		internal Uri BuildUri(string endpoint)
 		{
-
 			//build uri base
-			string uri = CfgUrl.TrimEnd('/') + "/" + CfgVerson;
+			var uri = CfgUrl.TrimEnd('/') + "/" + CfgVerson;
 			//add endpoint
 			uri += "/" + endpoint;
 
 			return new Uri(uri);
-
 		}
 
 		internal Uri BuildQuery(Uri uri, Dictionary<string, string> query)
 		{
-
-			UriBuilder reqUrl = new UriBuilder(uri);
+			var reqUrl = new UriBuilder(uri);
 
 			if (query != null)
 			{
-
 				string queryString = "";
 				foreach (string key in query.Keys)
 				{
@@ -596,7 +505,7 @@ namespace VzaarApi
 						queryString += "&" + item;
 				}
 
-				if (reqUrl.Query != null && reqUrl.Query.Length > 1)
+				if (reqUrl.Query.Length > 1)
 					reqUrl.Query = reqUrl.Query.Substring(1) + "&" + queryString;
 				else
 					reqUrl.Query = queryString;

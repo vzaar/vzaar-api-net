@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -40,9 +41,19 @@ namespace VzaarApi
 
 		public static Playlist Create(Dictionary<string, object> tokens, Client client)
 		{
+			return CreateAsync(tokens, client).Result;
+		}
+
+		public static Task<Playlist> CreateAsync(Dictionary<string, object> tokens)
+		{
+			return CreateAsync(tokens, Client.GetClient());
+		}
+
+		public static async Task<Playlist> CreateAsync(Dictionary<string, object> tokens, Client client)
+		{
 			var playlist = new Playlist(client);
 
-			playlist.record.Create(tokens);
+			await playlist.record.Create(tokens).ConfigureAwait(false);
 
 			return playlist;
 		}
@@ -55,28 +66,53 @@ namespace VzaarApi
 
 		public static Playlist Find(long id, Client client)
 		{
-			var playlist = new Playlist(client);
+			return FindAsync(id, client).Result;
+		}
 
-			playlist.record.Read(id);
+		public static Task<Playlist> FindAsync(long id)
+		{
+			return FindAsync(id, Client.GetClient());
+		}
 
-			return playlist;
+		public static async Task<Playlist> FindAsync(long id, Client client)
+		{
+			var resource = new Playlist(client);
+
+			await resource.record.Read(id).ConfigureAwait(false);
+
+			return resource;
 		}
 
 		//update
 		public virtual void Save()
 		{
-			record.Update();
+			SaveAsync().Wait();
 		}
 
 		public virtual void Save(Dictionary<string, object> tokens)
 		{
-			record.Update(tokens);
+			SaveAsync(tokens).Wait();
+		}
+
+		public virtual async Task SaveAsync()
+		{
+			await record.Update().ConfigureAwait(false);
+		}
+
+		public virtual async Task SaveAsync(Dictionary<string, object> tokens)
+		{
+			await record.Update(tokens).ConfigureAwait(false);
 		}
 
 		//delete
 		public virtual void Delete()
 		{
-			record.Delete();
+			DeleteAsync().Wait();
+		}
+
+		public virtual async Task DeleteAsync()
+		{
+			await record.Delete().ConfigureAwait(false);
 		}
 	}
 }

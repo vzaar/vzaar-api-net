@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -14,12 +15,12 @@ namespace VzaarApi
 		{
 		}
 
-		internal Video LinkCreate(Dictionary<string, object> tokens)
+		internal async Task<Video> LinkCreateAsync(Dictionary<string, object> tokens)
 		{
 			if (tokens.ContainsKey("uploader") == false)
 				tokens.Add("uploader", Client.UPLOADER + Client.VERSION);
 
-			record.Create(tokens);
+			await record.Create(tokens).ConfigureAwait(false);
 			record.RecordEndpoint = "videos";
 
 			var video = new Video(record);
@@ -45,9 +46,29 @@ namespace VzaarApi
 
 		public static Video Create(Dictionary<string, object> tokens, Client client)
 		{
+			return CreateAsync(tokens, client).Result;
+		}
+
+		public static Task<Video> CreateAsync(string url)
+		{
+			return CreateAsync(url, Client.GetClient());
+		}
+
+		public static Task<Video> CreateAsync(string url, Client client)
+		{
+			return CreateAsync(new Dictionary<string, object> { { "url", url } }, client);
+		}
+
+		public static Task<Video> CreateAsync(Dictionary<string, object> tokens)
+		{
+			return CreateAsync(tokens, Client.GetClient());
+		}
+
+		public static async Task<Video> CreateAsync(Dictionary<string, object> tokens, Client client)
+		{
 			var link = new LinkUpload(client);
 
-			var video = link.LinkCreate(tokens);
+			var video = await link.LinkCreateAsync(tokens).ConfigureAwait(false);
 
 			return video;
 		}

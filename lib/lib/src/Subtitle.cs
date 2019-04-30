@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -39,37 +40,52 @@ namespace VzaarApi
 		//create
 		internal virtual void Create(Dictionary<string, object> tokens)
 		{
+			CreateAsync(tokens).Wait();
+		}
+
+		internal virtual async Task CreateAsync(Dictionary<string, object> tokens)
+		{
 			if (tokens.ContainsKey("file"))
 			{
 				var filepath = tokens["file"].ToString();
 
-				record.Create(tokens, null, filepath);
+				await record.Create(tokens, null, filepath);
 			}
 			else
 			{
-				record.Create(tokens);
+				await record.Create(tokens);
 			}
 		}
 
 		//update
 		internal virtual void Save(Dictionary<string, object> tokens)
 		{
+			SaveAsync(tokens).Wait();
+		}
+
+		internal virtual async Task SaveAsync(Dictionary<string, object> tokens)
+		{
 			if (tokens.ContainsKey("file"))
 			{
 				var filepath = tokens["file"].ToString();
 
-				record.Update(tokens, null, filepath);
+				await record.Update(tokens, null, filepath).ConfigureAwait(false);
 			}
 			else
 			{
-				record.Update(tokens);
+				await record.Update(tokens).ConfigureAwait(false);
 			}
 		}
 
 		//delete
-		internal virtual void Delete()
+		public virtual void Delete()
 		{
-			record.Delete();
+			DeleteAsync().Wait();
+		}
+
+		public virtual async Task DeleteAsync()
+		{
+			await record.Delete().ConfigureAwait(false);
 		}
 
 	}//end class

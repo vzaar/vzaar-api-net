@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -30,19 +31,39 @@ namespace VzaarApi
 
 		public new virtual IEnumerable<Subtitle> EachItem(Dictionary<string, string> query, Client client)
 		{
-			records.Read(query);
+			return EachItemAsync(query, client).Result;
+		}
+
+		public new virtual Task<IEnumerable<Subtitle>> EachItemAsync()
+		{
+			return EachItemAsync(new Dictionary<string, string>(), Client.GetClient());
+		}
+
+		public new virtual Task<IEnumerable<Subtitle>> EachItemAsync(Client client)
+		{
+			return EachItemAsync(new Dictionary<string, string>(), client);
+		}
+
+		public new virtual Task<IEnumerable<Subtitle>> EachItemAsync(Dictionary<string, string> query)
+		{
+			return EachItemAsync(query, Client.GetClient());
+		}
+
+		public new virtual async Task<IEnumerable<Subtitle>> EachItemAsync(Dictionary<string, string> query, Client client)
+		{
+			await records.Read(query).ConfigureAwait(false);
+
+			var resources = new List<Subtitle>();
 
 			do
 			{
 				Initialize();
 
-				foreach (var item in Page)
-				{
-					yield return item;
-				}
+				resources.AddRange(Page);
 
-			} while (records.Next());
+			} while (await records.Next());
 
+			return resources;
 		}
 
 		//paginate
@@ -64,6 +85,29 @@ namespace VzaarApi
 		public new virtual SubtitlesList Paginate(Dictionary<string, string> query, Client client)
 		{
 			records.Read(query);
+			Initialize();
+
+			return this;
+		}
+
+		public new virtual Task<SubtitlesList> PaginateAsync()
+		{
+			return PaginateAsync(new Dictionary<string, string>());
+		}
+
+		public new virtual Task<SubtitlesList> PaginateAsync(Client client)
+		{
+			return PaginateAsync(new Dictionary<string, string>(), client);
+		}
+
+		public new virtual Task<SubtitlesList> PaginateAsync(Dictionary<string, string> query)
+		{
+			return PaginateAsync(query, Client.GetClient());
+		}
+
+		public new virtual async Task<SubtitlesList> PaginateAsync(Dictionary<string, string> query, Client client)
+		{
+			await records.Read(query).ConfigureAwait(false);
 			Initialize();
 
 			return this;
