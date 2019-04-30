@@ -1,11 +1,7 @@
-﻿using System;
-
-namespace VzaarApi
+﻿namespace VzaarApi
 {
-	public class Preset
+	public class Preset : BaseResource
 	{
-		internal Record record;
-
 		//constructor
 		public Preset()
 			: this(Client.GetClient())
@@ -13,43 +9,28 @@ namespace VzaarApi
 		}
 
 		public Preset(Client client)
+			: base("encoding_presets", client)
 		{
-			record = new Record("encoding_presets", client);
 		}
 
+		/// <summary>
+		/// Do not remove. This is required for use in BaseResourceCollection
+		/// </summary>
 		internal Preset(Record item)
+			: base(item)
 		{
 			record = item;
 		}
 
-		public Client GetClient()
-		{
-			return record.RecordClient;
-		}
-
 		public object this[string index]
 		{
-
-			get { return record[index]; }
-
-		}
-
-		public object ToTypeDef(Type type)
-		{
-
-			return record.ToTypeDef(type);
-
+			get => record[index];
 		}
 
 		//lookup
 		public static Preset Find(long id)
 		{
-
-			var preset = new Preset();
-
-			preset.record.Read(id);
-
-			return preset;
+			return Find(id, Client.GetClient());
 		}
 
 		public static Preset Find(long id, Client client)

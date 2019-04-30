@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace VzaarApi
 {
-	public class Signature
+	public class Signature : BaseResource
 	{
-		internal Record record;
-
 		//constructor
 		public Signature()
 			: this(Client.GetClient())
@@ -15,66 +12,90 @@ namespace VzaarApi
 		}
 
 		public Signature(Client client)
+			: base("signature", client)
 		{
-			record = new Record("signature", client);
-		}
-
-		public Client GetClient()
-		{
-			return record.RecordClient;
 		}
 
 		public object this[string index]
 		{
-
-			get { return record[index]; }
-
+			get => record[index];
 		}
 
-		public object ToTypeDef(Type type)
+		//create from file
+		public static Signature Create(string filepath)
 		{
-
-			return record.ToTypeDef(type);
-
+			return Create(filepath, Client.GetClient());
 		}
 
-		internal void CreateSingle(Dictionary<string, object> tokens)
+		public static Signature Create(string filepath, Client client)
 		{
+			var signature = new Signature(client);
 
+			signature.CreateFromFile(filepath);
+
+			return signature;
+		}
+
+		public static Signature Single()
+		{
+			return Single(new Dictionary<string, object>(), Client.GetClient());
+		}
+
+		public static Signature Single(Client client)
+		{
+			return Single(new Dictionary<string, object>(), client);
+		}
+
+		public static Signature Single(Dictionary<string, object> tokens)
+		{
+			return Single(tokens, Client.GetClient());
+		}
+
+		public static Signature Single(Dictionary<string, object> tokens, Client client)
+		{
+			var signature = new Signature(client);
+
+			signature.CreateSingle(tokens);
+
+			return signature;
+		}
+
+		public static Signature Multipart(Dictionary<string, object> tokens)
+		{
+			return Multipart(tokens, Client.GetClient());
+		}
+
+		public static Signature Multipart(Dictionary<string, object> tokens, Client client)
+		{
+			var signature = new Signature(client);
+
+			signature.CreateMultipart(tokens);
+
+			return signature;
+		}
+
+		private void CreateSingle(Dictionary<string, object> tokens)
+		{
 			if (tokens.ContainsKey("uploader") == false)
-			{
 				tokens.Add("uploader", Client.UPLOADER + Client.VERSION);
-			}
 
 			string path = "/single/2";
 
 			record.Create(tokens, path);
-
 		}
 
-		internal void CreateSingle()
+		private void CreateMultipart(Dictionary<string, object> tokens)
 		{
-
-			CreateSingle(new Dictionary<string, object>());
-
-		}
-
-		internal void CreateMultipart(Dictionary<string, object> tokens)
-		{
-
 			if (tokens.ContainsKey("uploader") == false)
-			{
 				tokens.Add("uploader", Client.UPLOADER + Client.VERSION);
-			}
 
 			string path = "/multipart/2";
 
 			record.Create(tokens, path);
 		}
 
-		internal void CreateFromFile(string filepath)
+		private void CreateFromFile(string filepath)
 		{
-
 			FileInfo file = new FileInfo(filepath);
 
 			if (file.Exists == false)
@@ -89,94 +110,9 @@ namespace VzaarApi
 			tokens.Add("filesize", filesize);
 
 			if (filesize >= Client.MULTIPART_MIN_SIZE)
-			{
 				CreateMultipart(tokens);
-			}
 			else
-			{
 				CreateSingle(tokens);
-			}
-		}
-
-		//create from file
-		public static Signature Create(string filepath)
-		{
-
-			var signature = new Signature();
-
-			signature.CreateFromFile(filepath);
-
-			return signature;
-		}
-
-		public static Signature Create(string filepath, Client client)
-		{
-
-			var signature = new Signature(client);
-
-			signature.CreateFromFile(filepath);
-
-			return signature;
-		}
-
-		public static Signature Single()
-		{
-
-			var signature = new Signature();
-
-			signature.CreateSingle();
-
-			return signature;
-		}
-
-		public static Signature Single(Client client)
-		{
-
-			var signature = new Signature(client);
-
-			signature.CreateSingle();
-
-			return signature;
-		}
-
-		public static Signature Single(Dictionary<string, object> tokens)
-		{
-
-			var signature = new Signature();
-
-			signature.CreateSingle(tokens);
-
-			return signature;
-		}
-
-		public static Signature Single(Dictionary<string, object> tokens, Client client)
-		{
-
-			var signature = new Signature(client);
-
-			signature.CreateSingle(tokens);
-
-			return signature;
-		}
-
-		public static Signature Multipart(Dictionary<string, object> tokens)
-		{
-
-			var signature = new Signature();
-
-			signature.CreateMultipart(tokens);
-
-			return signature;
-		}
-
-		public static Signature Multipart(Dictionary<string, object> tokens, Client client)
-		{
-
-			var signature = new Signature(client);
-
-			signature.CreateMultipart(tokens);
-
-			return signature;
 		}
 	}
 }

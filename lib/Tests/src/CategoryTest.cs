@@ -23,9 +23,6 @@ namespace tests
 			Assert.IsInstanceOf<Record> (category.record);
 			Assert.IsInstanceOf<Client> (category.record.RecordClient);
 			Assert.That (category.record.RecordClient, Is.SameAs (client));
-
-			var assignRecord = new Category (category.record);
-			Assert.That (assignRecord.record, Is.SameAs (category.record));
 		}
 
 		[Test()]

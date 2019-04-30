@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
 
 namespace VzaarApi
 {
-	public class Video
+	public class Video : BaseResource
 	{
-		internal Record record;
-		internal Subtitle subtitle;
-		internal SubtitlesList subtitlesList;
-
 		//constructor
 		public Video()
 			: this(Client.GetClient())
@@ -18,165 +13,95 @@ namespace VzaarApi
 		}
 
 		public Video(Client client)
+			: base("videos", client)
 		{
-			record = new Record("videos", client);
 		}
 
 		internal Video(Record item)
+			: base(item)
 		{
 			record = item;
 		}
 
-		public Client GetClient()
-		{
-			return record.RecordClient;
-		}
+		public bool Edited => record.Edited;
 
 		public object this[string index]
 		{
-
-			get { return record[index]; }
-
-			set { record[index] = value; }
+			get => record[index];
+			set => record[index] = value;
 		}
 
-		public object ToTypeDef(Type type)
+		private async Task<Video> createDataAsync(Dictionary<string, object> tokens)
 		{
-
-			return record.ToTypeDef(type);
-
-		}
-
-		public bool Edited
-		{
-			get { return record.Edited; }
-		}
-
-		internal async Task<object> createDataAsync(Dictionary<string, object> tokens)
-		{
-
 			bool containsfile = tokens.ContainsKey("filepath");
 			bool containsguid = tokens.ContainsKey("guid");
 			bool containsurl = tokens.ContainsKey("url");
 
-			//to return Video created from LinkUpload, otherwise return null
-			object result = null;
+			if (!(containsfile ^ containsguid ^ containsurl))
+				throw new VzaarApiException("Need to specify one of the following parameters: guid or url or filepath");
 
-			if (((containsfile ^ containsguid) ^ containsurl) == true)
+			if (containsfile & containsguid & containsurl)
+				throw new VzaarApiException("Only one of the parameters: guid or url or filepath expected");
+
+			if (containsurl)
+				return LinkUpload.Create(tokens, record.RecordClient);
+
+			if (containsguid)
+				record.Create(tokens);
+
+			if (containsfile)
 			{
+				string filepath = (string)tokens["filepath"];
 
-				if (((containsfile & containsguid) & containsurl) == true)
-				{
-					throw new VzaarApiException("Only one of the parameters: guid or url or filepath expected");
-				}
+				FileInfo file = new FileInfo(filepath);
 
-				if (containsguid == true)
-				{
+				if (file.Exists == false)
+					throw new VzaarApiException("File does not exist: " + filepath);
 
-					record.Create(tokens);
+				Signature signature = Signature.Create(filepath, record.RecordClient);
 
-				}
-				else if (containsurl == true)
-				{
+				await record.RecordClient.HttpPostS3Async(filepath, signature);
 
-					result = LinkUpload.Create(tokens, record.RecordClient);
+				tokens.Remove("filepath");
+				tokens.Add("guid", (string)signature["guid"]);
 
-				}
-				else
-				{
-
-					string filepath = (string)tokens["filepath"];
-
-					FileInfo file = new FileInfo(filepath);
-
-					if (file.Exists == false)
-						throw new VzaarApiException("File does not exist: " + filepath);
-
-					Signature signature = Signature.Create(filepath, record.RecordClient);
-
-					await record.RecordClient.HttpPostS3Async(filepath, signature);
-
-					tokens.Remove("filepath");
-					tokens.Add("guid", (string)signature["guid"]);
-
-					await createDataAsync(tokens);
-
-				}
-
-			}
-			else
-			{
-
-				throw new VzaarApiException();
+				record.Create(tokens);
 			}
 
-			return result;
+			return this;
 		}
 
-		//create with additiobal parameters
-		public async static Task<Video> CreateAsync(Dictionary<string, object> tokens)
+		//create
+		public static Task<Video> CreateAsync(string filepath)
 		{
-
-			var video = new Video();
-
-			object urlvideo = await video.createDataAsync(tokens);
-			if (urlvideo != null)
-				return (Video)urlvideo;
-
-			return video;
+			return CreateAsync(filepath, Client.GetClient());
 		}
 
-		public async static Task<Video> CreateAsync(Dictionary<string, object> tokens, Client client)
+		public static Task<Video> CreateAsync(string filepath, Client client)
 		{
+			return CreateAsync(new Dictionary<string, object> { { "filepath", filepath } }, client);
+		}
 
+		public static Task<Video> CreateAsync(Dictionary<string, object> tokens)
+		{
+			return CreateAsync(tokens, Client.GetClient());
+		}
+
+		public static async Task<Video> CreateAsync(Dictionary<string, object> tokens, Client client)
+		{
 			var video = new Video(client);
 
-			object urlvideo = await video.createDataAsync(tokens);
-			if (urlvideo != null)
-				return (Video)urlvideo;
-
-			return video;
-		}
-
-		//create from file
-		public async static Task<Video> CreateAsync(string filepath)
-		{
-
-			var video = new Video();
-
-			var file = new Dictionary<string, object>();
-			file.Add("filepath", filepath);
-			await video.createDataAsync(file);
-
-			return video;
-		}
-
-		public async static Task<Video> CreateAsync(string filepath, Client client)
-		{
-
-			var video = new Video(client);
-
-			var file = new Dictionary<string, object>();
-			file.Add("filepath", filepath);
-			await video.createDataAsync(file);
-
-			return video;
+			return await video.createDataAsync(tokens);
 		}
 
 		//lookup
 		public static Video Find(long id)
 		{
-
-			var video = new Video();
-
-			video.record.Read(id);
-
-			return video;
+			return Find(id, Client.GetClient());
 		}
 
 		public static Video Find(long id, Client client)
 		{
-
 			var video = new Video(client);
 
 			video.record.Read(id);
@@ -187,67 +112,54 @@ namespace VzaarApi
 		//update
 		public virtual void Save()
 		{
-
 			record.Update();
-
 		}
 
 		public virtual void Save(Dictionary<string, object> tokens)
 		{
-
 			record.Update(tokens);
-
 		}
 
 		//delete
 		public virtual void Delete()
 		{
-
 			record.Delete();
-
 		}
 
 		//SubtitlesList get
 		public virtual SubtitlesList Subtitles()
 		{
-
-			subtitlesList = new SubtitlesList((long)record["id"], record.RecordClient);
-			return subtitlesList;
+			return new SubtitlesList((long)record["id"], record.RecordClient);
 		}
 
 		//Subtitle create
 		public virtual Subtitle SubtitleCreate(Dictionary<string, object> tokens)
 		{
-
-			subtitle = new Subtitle((long)record["id"], record.RecordClient);
+			var subtitle = new Subtitle((long)record["id"], record.RecordClient);
 			subtitle.Create(tokens);
 
 			//refresh video object
 			record.Read((long)record["id"]);
 
 			return subtitle;
-
 		}
 
 		//Subtitle update
 		public virtual Subtitle SubtitleUpdate(long subtitleId, Dictionary<string, object> tokens)
 		{
-
-			subtitle = new Subtitle((long)record["id"], record.RecordClient, subtitleId);
+			var subtitle = new Subtitle((long)record["id"], record.RecordClient, subtitleId);
 			subtitle.Save(tokens);
 
 			//refresh video object
 			record.Read((long)record["id"]);
 
 			return subtitle;
-
 		}
 
 		//Subtitle delete
 		public virtual Subtitle SubtitleDelete(long subtitleId)
 		{
-
-			subtitle = new Subtitle((long)record["id"], record.RecordClient, subtitleId);
+			var subtitle = new Subtitle((long)record["id"], record.RecordClient, subtitleId);
 			subtitle.Delete();
 
 			//refresh video object
@@ -259,21 +171,15 @@ namespace VzaarApi
 		//Set Image Frame
 		public virtual void SetImageFrame(Dictionary<string, object> tokens)
 		{
-
-			var videoId = (long)record["id"];
-
 			if (tokens.ContainsKey("image"))
 			{
-
+				var videoId = (long)record["id"];
 				var filepath = tokens["image"].ToString();
-				record.Create(tokens, "/" + videoId.ToString() + "/image", filepath);
-
+				record.Create(tokens, $"/{videoId}/image", filepath);
 			}
 			else
 			{
-
 				record.Update(tokens, "/image");
-
 			}
 		}
 	}

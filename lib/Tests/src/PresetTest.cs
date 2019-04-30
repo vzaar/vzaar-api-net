@@ -22,9 +22,6 @@ namespace tests
 			Assert.IsInstanceOf<Record> (preset.record);
 			Assert.IsInstanceOf<Client> (preset.record.RecordClient);
 			Assert.That (preset.record.RecordClient, Is.SameAs (client));
-
-			var assignRecord = new Preset (preset.record);
-			Assert.That (assignRecord.record, Is.SameAs (preset.record));
 		}
 
 		[Test()]

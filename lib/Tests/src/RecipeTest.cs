@@ -24,9 +24,6 @@ namespace tests
 			Assert.IsInstanceOf<Record> (recipe.record);
 			Assert.IsInstanceOf<Client> (recipe.record.RecordClient);
 			Assert.That (recipe.record.RecordClient, Is.SameAs (client));
-
-			var assignRecord = new Recipe (recipe.record);
-			Assert.That (assignRecord.record, Is.SameAs (recipe.record));
 		}
 
 		[Test()]

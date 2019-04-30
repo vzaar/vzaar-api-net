@@ -1,16 +1,9 @@
-﻿using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace VzaarApi
 {
-	public class Recipe
+	public class Recipe : BaseResource
 	{
-
-		internal Record record;
-
 		//constructor
 		public Recipe()
 			: this(Client.GetClient())
@@ -18,54 +11,35 @@ namespace VzaarApi
 		}
 
 		public Recipe(Client client)
+			: base("ingest_recipes", client)
 		{
-			record = new Record("ingest_recipes", client);
 		}
 
+		/// <summary>
+		/// Do not remove. This is required for use in BaseResourceCollection
+		/// </summary>
 		internal Recipe(Record item)
+			: base(item)
 		{
 			record = item;
 		}
 
-		public Client GetClient()
-		{
-			return record.RecordClient;
-		}
+		public bool Edited => record.Edited;
 
 		public object this[string index]
 		{
-
-			get { return record[index]; }
-
-			set { record[index] = value; }
-		}
-
-		public object ToTypeDef(Type type)
-		{
-
-			return record.ToTypeDef(type);
-
-		}
-
-		public bool Edited
-		{
-			get { return record.Edited; }
+			get => record[index];
+			set => record[index] = value;
 		}
 
 		//create
 		public static Recipe Create(Dictionary<string, object> tokens)
 		{
-
-			var recipe = new Recipe();
-
-			recipe.record.Create(tokens);
-
-			return recipe;
+			return Create(tokens, Client.GetClient());
 		}
 
 		public static Recipe Create(Dictionary<string, object> tokens, Client client)
 		{
-
 			var recipe = new Recipe(client);
 
 			recipe.record.Create(tokens);
@@ -76,17 +50,11 @@ namespace VzaarApi
 		//lookup
 		public static Recipe Find(long id)
 		{
-
-			var recipe = new Recipe();
-
-			recipe.record.Read(id);
-
-			return recipe;
+			return Find(id, Client.GetClient());
 		}
 
 		public static Recipe Find(long id, Client client)
 		{
-
 			var recipe = new Recipe(client);
 
 			recipe.record.Read(id);
@@ -97,26 +65,19 @@ namespace VzaarApi
 		//update
 		public virtual void Save()
 		{
-
 			record.Update();
-
 		}
 
 		public virtual void Save(Dictionary<string, object> tokens)
 		{
-
 			record.Update(tokens);
-
 		}
 
 		//delete
 		public virtual void Delete()
 		{
-
 			record.Delete();
-
 		}
-
 	}
 }
 

@@ -24,9 +24,6 @@ namespace tests
 			Assert.IsInstanceOf<Record> (playlist.record);
 			Assert.IsInstanceOf<Client> (playlist.record.RecordClient);
 			Assert.That (playlist.record.RecordClient, Is.SameAs (client));
-
-			var assignRecord = new Playlist (playlist.record);
-			Assert.That (assignRecord.record, Is.SameAs (playlist.record));
 		}
 
 		[Test()]

@@ -1,64 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace VzaarApi
 {
-	public class Category
+	public class Category : BaseResource
 	{
-		internal Record record;
-
 		//constructor
 		public Category()
-			: this(Client.GetClient())
+			: this (Client.GetClient())
 		{
 		}
 
 		public Category(Client client)
+			: base("categories", client)
 		{
-			record = new Record("categories", client);
 		}
 
+		/// <summary>
+		/// Do not remove. This is required for use in BaseResourceCollection
+		/// </summary>
 		internal Category(Record item)
+			: base(item)
 		{
 			record = item;
 		}
 
-		public Client GetClient()
-		{
-			return record.RecordClient;
-		}
+		public bool Edited => record.Edited;
 
 		public object this[string index]
 		{
-
-			get { return record[index]; }
-
-			set { record[index] = value; }
-		}
-
-		public object ToTypeDef(Type type)
-		{
-
-			return record.ToTypeDef(type);
-
-		}
-
-		public bool Edited
-		{
-			get { return record.Edited; }
+			get => record[index];
+			set => record[index] = value;
 		}
 
 		public CategoriesList Subtree()
 		{
-
-			long id = (long)this["id"];
-			var query = new Dictionary<string, string>();
-			return CategoriesList.Subtree(id, query, record.RecordClient);
+			return Subtree(new Dictionary<string, string>());
 		}
 
 		public CategoriesList Subtree(Dictionary<string, string> query)
 		{
-
 			long id = (long)this["id"];
 			return CategoriesList.Subtree(id, query, record.RecordClient);
 		}
@@ -66,17 +46,11 @@ namespace VzaarApi
 		//lookup
 		public static Category Find(long id)
 		{
-
-			var category = new Category();
-
-			category.record.Read(id);
-
-			return category;
+			return Find(id, Client.GetClient());
 		}
 
 		public static Category Find(long id, Client client)
 		{
-
 			var category = new Category(client);
 
 			category.record.Read(id);
@@ -87,17 +61,11 @@ namespace VzaarApi
 		//create
 		public static Category Create(Dictionary<string, object> tokens)
 		{
-
-			var category = new Category();
-
-			category.record.Create(tokens);
-
-			return category;
+			return Create(tokens, Client.GetClient());
 		}
 
 		public static Category Create(Dictionary<string, object> tokens, Client client)
 		{
-
 			var category = new Category(client);
 
 			category.record.Create(tokens);
@@ -108,26 +76,19 @@ namespace VzaarApi
 		//update
 		public virtual void Save()
 		{
-
 			record.Update();
-
 		}
 
 		public virtual void Save(Dictionary<string, object> tokens)
 		{
-
 			record.Update(tokens);
-
 		}
 
 		//delete
 		public virtual void Delete()
 		{
-
 			record.Delete();
-
 		}
-
 	}
 }
 

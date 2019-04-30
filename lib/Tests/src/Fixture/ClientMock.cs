@@ -142,18 +142,18 @@ namespace tests
 				break;
 			case MockResponse.Signature:
 				content = "";
-				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/single/2"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/single/2"))
 					content = signature_single;
 
-				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/multipart/2"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/multipart/2"))
 					content = signature_multipart;
 				break;
 			case MockResponse.SignatureFailed:
 				content = "";
-				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/single/2"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/single/2"))
 					content = signature_single_failed;
 
-				if (msg.RequestUri.AbsolutePath.Equals ("/v2/signature/multipart/2"))
+				if (msg.RequestUri.AbsolutePath.Equals ("/api/v2/signature/multipart/2"))
 					content = signature_multipart_failed;
 				break;
 			case MockResponse.VideosList:
@@ -168,7 +168,6 @@ namespace tests
 				content = playlistsList_base;
 				if (msg.RequestUri.Query != "")
 					content = playlistsList_query;
-				break;
 				break;
 			}
 				
