@@ -121,7 +121,7 @@ namespace VzaarApi
 		internal async Task Create(Dictionary<string, object> tokens)
 		{
 			string body = JsonConvert.SerializeObject(tokens);
-			var responseJson = await RecordClient.HttpPostAsync(RecordEndpoint, body);
+			var responseJson = await RecordClient.HttpPostAsync(RecordEndpoint, body).ConfigureAwait(false);
 
 			UpdateRecord(responseJson);
 		}
@@ -136,7 +136,7 @@ namespace VzaarApi
 			if (filepath == null)
 			{
 				string body = JsonConvert.SerializeObject(tokens);
-				var responseJson = await RecordClient.HttpPostAsync(endpoint, body);
+				var responseJson = await RecordClient.HttpPostAsync(endpoint, body).ConfigureAwait(false);
 
 				UpdateRecord(responseJson);
 			}
@@ -146,7 +146,7 @@ namespace VzaarApi
 				foreach (var entry in tokens)
 					postFields.Add(entry.Key, entry.Value.ToString());
 
-				var responseJson = await RecordClient.HttpPostFormAsync(endpoint, filepath, postFields);
+				var responseJson = await RecordClient.HttpPostFormAsync(endpoint, filepath, postFields).ConfigureAwait(false);
 
 				UpdateRecord(responseJson);
 			}
@@ -156,7 +156,7 @@ namespace VzaarApi
 		{
 			string endpoint = RecordEndpoint + "/" + id;
 
-			var responseJson = await RecordClient.HttpGetAsync(endpoint, new Dictionary<string, string>());
+			var responseJson = await RecordClient.HttpGetAsync(endpoint, new Dictionary<string, string>()).ConfigureAwait(false);
 
 			UpdateRecord(responseJson);
 		}
@@ -172,7 +172,7 @@ namespace VzaarApi
 			{
 				string body = JsonConvert.SerializeObject(tokens);
 
-				var responseJson = await RecordClient.HttpPatchAsync(endpoint, body);
+				var responseJson = await RecordClient.HttpPatchAsync(endpoint, body).ConfigureAwait(false);
 
 				UpdateRecord(responseJson);
 			}
@@ -182,7 +182,7 @@ namespace VzaarApi
 				foreach (var entry in tokens)
 					postFields.Add(entry.Key, entry.Value.ToString());
 
-				var responseJson = await RecordClient.HttpPatchFormAsync(endpoint, filepath, postFields);
+				var responseJson = await RecordClient.HttpPatchFormAsync(endpoint, filepath, postFields).ConfigureAwait(false);
 
 				UpdateRecord(responseJson);
 			}
@@ -193,7 +193,7 @@ namespace VzaarApi
 			string endpoint = RecordEndpoint + "/" + this["id"];
 			string body = JsonConvert.SerializeObject(cache);
 
-			var responseJson = await RecordClient.HttpPatchAsync(endpoint, body);
+			var responseJson = await RecordClient.HttpPatchAsync(endpoint, body).ConfigureAwait(false);
 
 			UpdateRecord(responseJson);
 		}
@@ -202,7 +202,7 @@ namespace VzaarApi
 		{
 			string endpoint = RecordEndpoint + "/" + this["id"];
 
-			await RecordClient.HttpDeleteAsync(endpoint);
+			await RecordClient.HttpDeleteAsync(endpoint).ConfigureAwait(false);
 
 			UpdateRecord(empty_record);
 		}

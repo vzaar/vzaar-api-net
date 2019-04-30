@@ -44,10 +44,10 @@ namespace VzaarApi
 				throw new VzaarApiException("Only one of the parameters: guid or url or filepath expected");
 
 			if (containsUrl)
-				return await LinkUpload.CreateAsync(tokens, record.RecordClient);
+				return await LinkUpload.CreateAsync(tokens, record.RecordClient).ConfigureAwait(false);
 
 			if (containsGuid)
-				await record.Create(tokens);
+				await record.Create(tokens).ConfigureAwait(false);
 
 			if (containsFile)
 			{
@@ -58,14 +58,14 @@ namespace VzaarApi
 				if (file.Exists == false)
 					throw new VzaarApiException("File does not exist: " + filepath);
 
-				var signature = await Signature.CreateAsync(filepath, record.RecordClient);
+				var signature = await Signature.CreateAsync(filepath, record.RecordClient).ConfigureAwait(false);
 
-				await record.RecordClient.HttpPostS3Async(filepath, signature);
+				await record.RecordClient.HttpPostS3Async(filepath, signature).ConfigureAwait(false);
 
 				tokens.Remove("filepath");
 				tokens.Add("guid", (string)signature["guid"]);
 
-				await record.Create(tokens);
+				await record.Create(tokens).ConfigureAwait(false);
 			}
 
 			return this;

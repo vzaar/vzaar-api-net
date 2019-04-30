@@ -49,11 +49,11 @@ namespace VzaarApi
 			{
 				var filepath = tokens["file"].ToString();
 
-				await record.Create(tokens, null, filepath);
+				await record.Create(tokens, null, filepath).ConfigureAwait(false);
 			}
 			else
 			{
-				await record.Create(tokens);
+				await record.Create(tokens).ConfigureAwait(false);
 			}
 		}
 

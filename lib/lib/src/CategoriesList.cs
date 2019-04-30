@@ -19,7 +19,7 @@ namespace VzaarApi
 		{
 			string path = "/" + id + "/subtree";
 
-			await records.Read(path, query);
+			await records.Read(path, query).ConfigureAwait(false);
 
 			Initialize();
 		}

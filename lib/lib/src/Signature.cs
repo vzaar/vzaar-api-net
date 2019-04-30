@@ -122,7 +122,7 @@ namespace VzaarApi
 
 			string path = "/single/2";
 
-			await record.Create(tokens, path);
+			await record.Create(tokens, path).ConfigureAwait(false);
 		}
 
 		private async Task CreateMultipartAsync(Dictionary<string, object> tokens)
@@ -132,7 +132,7 @@ namespace VzaarApi
 
 			string path = "/multipart/2";
 
-			await record.Create(tokens, path);
+			await record.Create(tokens, path).ConfigureAwait(false);
 		}
 
 		private async Task CreateFromFile(string filepath)
@@ -150,9 +150,9 @@ namespace VzaarApi
 			tokens.Add("filesize", filesize);
 
 			if (filesize >= Client.MULTIPART_MIN_SIZE)
-				await CreateMultipartAsync(tokens);
+				await CreateMultipartAsync(tokens).ConfigureAwait(false);
 			else
-				await CreateSingleAsync(tokens);
+				await CreateSingleAsync(tokens).ConfigureAwait(false);
 		}
 	}
 }

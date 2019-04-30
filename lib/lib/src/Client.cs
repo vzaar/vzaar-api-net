@@ -89,7 +89,7 @@ namespace VzaarApi
 				Method = HttpMethod.Get
 			};
 
-			var jsonResponse = await HttpSendAsync(msg);
+			var jsonResponse = await HttpSendAsync(msg).ConfigureAwait(false);
 
 			return jsonResponse;
 		}
@@ -109,7 +109,7 @@ namespace VzaarApi
 
 			msg.Content = content;
 
-			var jsonResponse = await HttpSendAsync(msg);
+			var jsonResponse = await HttpSendAsync(msg).ConfigureAwait(false);
 
 			return jsonResponse;
 		}
@@ -129,7 +129,7 @@ namespace VzaarApi
 
 			msg.Content = content;
 
-			var jsonResponse = await HttpSendAsync(msg);
+			var jsonResponse = await HttpSendAsync(msg).ConfigureAwait(false);
 
 			return jsonResponse;
 
@@ -145,7 +145,7 @@ namespace VzaarApi
 				Method = HttpMethod.Delete
 			};
 
-			await HttpSendAsync(msg);
+			await HttpSendAsync(msg).ConfigureAwait(false);
 
 			//if the request completed, means successful
 			//no return value needed
@@ -180,18 +180,18 @@ namespace VzaarApi
 
 			if (msg.Content != null) {
 				Debug.WriteLine ("Request Content");
-				string debug_content = await msg.Content.ReadAsStringAsync ();
+				string debug_content = await msg.Content.ReadAsStringAsync ().ConfigureAwait(false);
 				Debug.WriteLine (debug_content);
 			}
 #endif
 
-			var response = await httpClient.SendAsync(msg);
+			var response = await httpClient.SendAsync(msg).ConfigureAwait(false);
 
-			await ValidateHttpResponse(response);
+			await ValidateHttpResponse(response).ConfigureAwait(false);
 
 			httpHeaders = response.Headers;
 
-			var bodyResponse = await response.Content.ReadAsStringAsync();
+			var bodyResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
 			return bodyResponse;
 		}
@@ -207,9 +207,7 @@ namespace VzaarApi
 
 			if (response.Content != null) {
 				Debug.WriteLine ("Response Content");
-				var task = response.Content.ReadAsStringAsync ();
-				task.Wait();
-				string debug_content = task.Result;
+				var debug_content = await response.Content.ReadAsStringAsync ().ConfigureAwait(false);
 				Debug.WriteLine (debug_content);
 			}
 #endif
@@ -230,7 +228,7 @@ namespace VzaarApi
 				case (HttpStatusCode)429: //Too many Requests
 				case HttpStatusCode.InternalServerError:
 
-					var error = await response.Content.ReadAsStringAsync();
+					var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 					var message = "StatusCode: " + response.StatusCode + "\r\n";
 					message += error;
 
@@ -278,7 +276,7 @@ namespace VzaarApi
 				//upload file in POST form
 				using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 				{
-					await HttpPostMfdcAsync(hostname, file.Name, postFields, fileStream);
+					await HttpPostMfdcAsync(hostname, file.Name, postFields, fileStream).ConfigureAwait(false);
 					// response is validated in the HttpPostMfdcAsync
 				}
 			}
@@ -295,7 +293,7 @@ namespace VzaarApi
 				using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 				{
 					int bytesCount;
-					while ((bytesCount = await fileStream.ReadAsync(buffer, 0, chunkSize)) != 0)
+					while ((bytesCount = await fileStream.ReadAsync(buffer, 0, chunkSize).ConfigureAwait(false)) != 0)
 					{
 						string chunkKey = keyCache + "." + chunk;
 						postFields.Remove("key");
@@ -303,7 +301,7 @@ namespace VzaarApi
 
 						using (var chunkStream = new MemoryStream(buffer, 0, bytesCount))
 						{
-							await HttpPostMfdcAsync(hostname, file.Name, postFields, chunkStream);
+							await HttpPostMfdcAsync(hostname, file.Name, postFields, chunkStream).ConfigureAwait(false);
 							// response is validated in the HttpPostMfdcAsync
 						}
 
@@ -336,7 +334,7 @@ namespace VzaarApi
 			var httpMethod = HttpMethod.Post;
 			using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 			{
-				return await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream);
+				return await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream).ConfigureAwait(false);
 				// response is validated in the HttpPostMfdcAsync
 			}
 		}
@@ -356,7 +354,7 @@ namespace VzaarApi
 			var httpMethod = new HttpMethod("PATCH");
 			using (var fileStream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
 			{
-				return await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream);
+				return await HttpSendMfdcAsync(httpMethod, endpoint, file.Name, fields, fileStream).ConfigureAwait(false);
 				// response is validated in the HttpPostMfdcAsync
 			}
 		}
@@ -407,7 +405,7 @@ namespace VzaarApi
 
 			msg.Content = mfdc;
 
-			return await HttpSendAsync(msg);
+			return await HttpSendAsync(msg).ConfigureAwait(false);
 		}
 
 		internal virtual async Task HttpPostMfdcAsync(string hostname, string filename, Dictionary<string, string> fields, Stream stream)
@@ -447,9 +445,9 @@ namespace VzaarApi
 
 			msg.Content = mfdc;
 
-			var response = await this.httpClient.SendAsync(msg);
+			var response = await this.httpClient.SendAsync(msg).ConfigureAwait(false);
 
-			await ValidateS3Response(response);
+			await ValidateS3Response(response).ConfigureAwait(false);
 		}
 
 		internal async Task ValidateS3Response(HttpResponseMessage response)
@@ -457,7 +455,7 @@ namespace VzaarApi
 			string bodyResponse = "";
 
 			if (response.Content != null)
-				bodyResponse = await response.Content.ReadAsStringAsync();
+				bodyResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
 			Debug.WriteLine("Response StatusCode");
 			Debug.WriteLine(response.StatusCode + ": " + (int)response.StatusCode);

@@ -61,7 +61,7 @@ namespace VzaarApi
 
 				resources.AddRange(Page);
 
-			} while (await records.Next());
+			} while (await records.Next().ConfigureAwait(false));
 
 			return resources;
 		}

@@ -92,7 +92,7 @@ namespace VzaarApi
 
 		internal virtual async Task Read(string endpoint, Dictionary<string, string> query)
 		{
-			var responseJson = await RecordClient.HttpGetAsync(RecordEndpoint + endpoint, query);
+			var responseJson = await RecordClient.HttpGetAsync(RecordEndpoint + endpoint, query).ConfigureAwait(false);
 
 			UpdateList(responseJson);
 		}
@@ -145,7 +145,7 @@ namespace VzaarApi
 
 			if (link.Type != JTokenType.Null)
 			{
-				await GetPage((string)link);
+				await GetPage((string)link).ConfigureAwait(false);
 
 				return true;
 			}
