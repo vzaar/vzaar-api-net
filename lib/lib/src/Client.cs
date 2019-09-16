@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace VzaarApi
 {
@@ -23,7 +24,7 @@ namespace VzaarApi
 		public static bool urlAuth = false;
 
 		public static readonly string UPLOADER = "Vzaar .NET SDK";
-		public static readonly string VERSION = "2.1.0-alpha";
+		public static readonly string VERSION = "2.2.0-alpha";
 
 		public static readonly long ONE_MB = (1024 * 1024);
 		public static readonly long MULTIPART_MIN_SIZE = (5 * ONE_MB);
@@ -81,7 +82,7 @@ namespace VzaarApi
 
 			string value = string.Empty;
 			if (httpHeaders.TryGetValues (key, out header)) {
-				value = ((List<string>)header) [0];
+				value = header.FirstOrDefault ();
 			}
 			return value;
 		}
@@ -95,7 +96,7 @@ namespace VzaarApi
 			msg.RequestUri = httpUri;
 			msg.Method = HttpMethod.Get;
 
-			var jsonResponse = await HttpSendAsync (msg);
+			var jsonResponse = await HttpSendAsync (msg).ConfigureAwait(false);
 
 			return jsonResponse;
 		}
@@ -113,7 +114,7 @@ namespace VzaarApi
 
 			msg.Content = content;
 
-			var jsonResponse = await HttpSendAsync (msg);
+			var jsonResponse = await HttpSendAsync (msg).ConfigureAwait(false);
 
 			return jsonResponse;
 		}
@@ -131,7 +132,7 @@ namespace VzaarApi
 
 			msg.Content = content;
 
-			var jsonResponse = await HttpSendAsync (msg);
+			var jsonResponse = await HttpSendAsync (msg).ConfigureAwait(false);
 
 			return jsonResponse;
 
@@ -145,7 +146,7 @@ namespace VzaarApi
 			msg.RequestUri = httpUri;
 			msg.Method = HttpMethod.Delete;
 
-			await HttpSendAsync (msg);
+			await HttpSendAsync (msg).ConfigureAwait(false);
 
 			//if the request completed, means successful
 			//no return value needed
@@ -179,23 +180,23 @@ namespace VzaarApi
 
 			if (msg.Content != null) {
 				Debug.WriteLine ("Request Content");
-				string debug_content = await msg.Content.ReadAsStringAsync ();
+				string debug_content = await msg.Content.ReadAsStringAsync ().ConfigureAwait(false);
 				Debug.WriteLine (debug_content);
 			}
 			#endif
 
-			HttpResponseMessage response = await this.httpClient.SendAsync (msg);
+			HttpResponseMessage response = await this.httpClient.SendAsync (msg).ConfigureAwait(false);
 
-			ValidateHttpResponse (response);
+			await ValidateHttpResponse (response).ConfigureAwait(false);
 
 			httpHeaders = response.Headers;
 
-			var bodyResponse = await response.Content.ReadAsStringAsync ();
+			var bodyResponse = await response.Content.ReadAsStringAsync ().ConfigureAwait(false);
 
 			return bodyResponse;
 		}
 
-		internal void ValidateHttpResponse(HttpResponseMessage response) {
+		internal async Task ValidateHttpResponse(HttpResponseMessage response) {
 
 			#if DEBUG 
 			Debug.WriteLine ("Response StatusCode");
@@ -205,9 +206,7 @@ namespace VzaarApi
 
 			if (response.Content != null) {
 				Debug.WriteLine ("Response Content");
-				var task = response.Content.ReadAsStringAsync ();
-				task.Wait();
-				string debug_content = task.Result;
+				string debug_content = await response.Content.ReadAsStringAsync ().ConfigureAwait(false);
 				Debug.WriteLine (debug_content);
 			}
 			#endif
@@ -227,10 +226,7 @@ namespace VzaarApi
 			case (HttpStatusCode)429: //Too many Requests
 			case HttpStatusCode.InternalServerError:
 
-				var task = response.Content.ReadAsStringAsync ();
-				task.Wait ();
-
-				var error = task.Result;
+				var error = await response.Content.ReadAsStringAsync ().ConfigureAwait(false);
 
 				string message = "StatusCode: " + response.StatusCode.ToString () + "\r\n";
 				message += error;
@@ -282,7 +278,7 @@ namespace VzaarApi
 				FileStream fileStream;
 				using(fileStream = new FileStream (filepath, FileMode.Open, FileAccess.Read)) {
 
-					await HttpPostMfdcAsync (hostname, file.Name, postFields, fileStream);
+					await HttpPostMfdcAsync (hostname, file.Name, postFields, fileStream).ConfigureAwait(false);
 					// response is validated in the HttpPostMfdcAsync
 				}
 
@@ -303,7 +299,7 @@ namespace VzaarApi
 				FileStream fileStream;
 				using (fileStream = new FileStream (filepath, FileMode.Open, FileAccess.Read)) {
 					
-					while ((bytesCount = await fileStream.ReadAsync(buffer,0,chunkSize)) != 0 ) {
+					while ((bytesCount = await fileStream.ReadAsync(buffer,0,chunkSize).ConfigureAwait(false)) != 0 ) {
 
 						string chunkKey = keyCache + "." + chunk.ToString ();
 						postFields.Remove ("key");
@@ -312,7 +308,7 @@ namespace VzaarApi
 						MemoryStream chunkStream;
 						using (chunkStream = new MemoryStream (buffer,0,bytesCount)) {
 
-							await HttpPostMfdcAsync (hostname, file.Name, postFields, chunkStream);
+							await HttpPostMfdcAsync (hostname, file.Name, postFields, chunkStream).ConfigureAwait(false);
 
 							// response is validated in the HttpPostMfdcAsync
 						}
@@ -356,7 +352,7 @@ namespace VzaarApi
 			FileStream fileStream;
 			using(fileStream = new FileStream (filepath, FileMode.Open, FileAccess.Read)) {
 
-				var jsonResponse = await HttpSendMfdcAsync (httpMethod, endpoint, file.Name, fields, fileStream);
+				var jsonResponse = await HttpSendMfdcAsync (httpMethod, endpoint, file.Name, fields, fileStream).ConfigureAwait(false);
 				// response is validated in the HttpPostMfdcAsync
 
 				return jsonResponse;
@@ -387,7 +383,7 @@ namespace VzaarApi
 			FileStream fileStream;
 			using(fileStream = new FileStream (filepath, FileMode.Open, FileAccess.Read)) {
 
-				var jsonResponse = await HttpSendMfdcAsync (httpMethod, endpoint, file.Name, fields, fileStream);
+				var jsonResponse = await HttpSendMfdcAsync (httpMethod, endpoint, file.Name, fields, fileStream).ConfigureAwait(false);
 				// response is validated in the HttpPostMfdcAsync
 
 				return jsonResponse;
@@ -438,7 +434,7 @@ namespace VzaarApi
 
 			msg.Content = mfdc;
 
-			var jsonResponse = await HttpSendAsync (msg);
+			var jsonResponse = await HttpSendAsync (msg).ConfigureAwait(false);
 
 			return jsonResponse;
 		}
@@ -477,19 +473,17 @@ namespace VzaarApi
 
 			msg.Content = mfdc;
 
-			var response = await this.httpClient.SendAsync (msg);
+			var response = await this.httpClient.SendAsync (msg).ConfigureAwait(false);
 
-			ValidateS3Response (response);
+			await ValidateS3Response (response).ConfigureAwait(false);
 		}
 
-		internal void ValidateS3Response(HttpResponseMessage response) {
+		internal async Task ValidateS3Response(HttpResponseMessage response) {
 
 			string bodyResponse = "";
 
 			if (response.Content != null) {
-				var task = response.Content.ReadAsStringAsync ();
-				task.Wait ();
-				bodyResponse = task.Result;
+				bodyResponse = await response.Content.ReadAsStringAsync ().ConfigureAwait(false);
 			}
 
 			Debug.WriteLine ("Response StatusCode");

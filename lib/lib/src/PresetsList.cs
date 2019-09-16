@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -37,6 +38,80 @@ namespace VzaarApi
 			}
 		}
 
+		//ASYNC METHODS
+
+		//paginate
+		public async static Task<PresetsList> PaginateAsync(Dictionary<string,string> query) {
+
+			var presets = new PresetsList ();
+
+			await presets.records.ReadAsync(query).ConfigureAwait(false);
+			presets.Initialize ();
+
+			return presets;
+		}
+
+		public async static Task<PresetsList> PaginateAsync(Dictionary<string,string> query, Client client) {
+
+			var presets = new PresetsList (client);
+
+			await presets.records.ReadAsync(query).ConfigureAwait(false);
+			presets.Initialize ();
+
+			return presets;
+		}
+
+		public async static Task<PresetsList> PaginateAsync(){
+			return await PresetsList.PaginateAsync (new Dictionary<string, string> ()).ConfigureAwait(false);
+		}
+
+		public async static Task<PresetsList> PaginateAsync(Client client){
+			return await PresetsList.PaginateAsync (new Dictionary<string, string> (), client).ConfigureAwait(false);
+		}
+
+		public async Task<bool> NextAsync() {
+
+			bool result = await records.NextAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> PrevousAsync() {
+			
+			bool result = await records.PreviousAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> FirstAsync() {
+			
+			bool result = await records.FirstAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> LastAsync() {
+			
+			bool result = await records.LastAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+
+		//SYNC METHODS
+
 		//get list
 		public static IEnumerable<Preset> EachItem() {
 			return PresetsList.EachItem (new Dictionary<string, string> ());
@@ -50,7 +125,8 @@ namespace VzaarApi
 
 			var presets = new PresetsList ();
 
-			presets.records.Read (query);
+			var task = presets.records.ReadAsync (query);
+			task.Wait ();
 
 			do {
 
@@ -60,7 +136,7 @@ namespace VzaarApi
 					yield return item;
 				}
 
-			} while (presets.records.Next());
+			} while (presets.records.NextAsync().Result);
 
 		}
 
@@ -68,7 +144,8 @@ namespace VzaarApi
 
 			var presets = new PresetsList (client);
 
-			presets.records.Read (query);
+			var task = presets.records.ReadAsync (query);
+			task.Wait ();
 
 			do {
 
@@ -78,77 +155,41 @@ namespace VzaarApi
 					yield return item;
 				}
 
-			} while (presets.records.Next());
+			} while (presets.records.NextAsync().Result);
 
 		}
 
 		//paginate
 		public static PresetsList Paginate(Dictionary<string,string> query) {
-
-			var presets = new PresetsList ();
-
-			presets.records.Read(query);
-			presets.Initialize ();
-
-			return presets;
+			return PresetsList.PaginateAsync (query).Result;
 		}
 
 		public static PresetsList Paginate(Dictionary<string,string> query, Client client) {
-
-			var presets = new PresetsList (client);
-
-			presets.records.Read(query);
-			presets.Initialize ();
-
-			return presets;
+			return PresetsList.PaginateAsync (query, client).Result;
 		}
 
 		public static PresetsList Paginate(){
-			return PresetsList.Paginate (new Dictionary<string, string> ());
+			return PresetsList.PaginateAsync (new Dictionary<string, string> ()).Result;
 		}
 
 		public static PresetsList Paginate(Client client){
-			return PresetsList.Paginate (new Dictionary<string, string> (), client);
+			return PresetsList.PaginateAsync (new Dictionary<string, string> (), client).Result;
 		}
 
-		public virtual bool Next() {
-
-			bool result = records.Next ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+		public bool Next() {
+			return NextAsync ().Result;
 		}
 
 		public virtual bool Prevous() {
-			
-			bool result = records.Previous ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return PrevousAsync ().Result;
 		}
 
 		public virtual bool First() {
-			
-			bool result = records.First ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return FirstAsync ().Result;
 		}
 
 		public virtual bool Last() {
-			
-			bool result = records.Last ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return LastAsync ().Result;
 		}
 
 	}//enc class

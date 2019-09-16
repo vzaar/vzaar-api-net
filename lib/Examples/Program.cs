@@ -28,6 +28,9 @@ namespace Examples
 
 			Examples.Run (tokens);
 
+			//ASYNC INTERFACE
+			Examples.RunAsync (tokens).Wait();
+
 		}
 	}
 }

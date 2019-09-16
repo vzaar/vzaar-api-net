@@ -43,6 +43,15 @@
     <Compile Include="src\Playlists.cs" />
     <Compile Include="src\Subtitles.cs" />
     <Compile Include="src\ImageFrame.cs" />
+    <Compile Include="src\EncodingPresetsAsync.cs" />
+    <Compile Include="src\ImageFrameAsync.cs" />
+    <Compile Include="src\IngestRecipesAsync.cs" />
+    <Compile Include="src\LinkUploadsAsync.cs" />
+    <Compile Include="src\PlaylistsAsync.cs" />
+    <Compile Include="src\SubtitlesAsync.cs" />
+    <Compile Include="src\UploadSignaturesAsync.cs" />
+    <Compile Include="src\VideoCategoriesAsync.cs" />
+    <Compile Include="src\VideosAsync.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -49,62 +49,98 @@ namespace VzaarApi
 			get { return record.Edited; }
 		}
 
+		//ASYNC METHODS
+
 		//create
-		public static Playlist Create(Dictionary<string,object> tokens) {
+		public async static Task<Playlist> CreateAsync(Dictionary<string,object> tokens) {
 
 			var playlist = new Playlist ();
 
-			playlist.record.Create (tokens);
+			await playlist.record.CreateAsync (tokens).ConfigureAwait(false);
 
 			return playlist;
 		}
 
-		public static Playlist Create(Dictionary<string,object> tokens, Client client){
+		public async static Task<Playlist> CreateAsync(Dictionary<string,object> tokens, Client client){
 
 			var playlist = new Playlist (client);
 
-			playlist.record.Create (tokens);
+			await playlist.record.CreateAsync (tokens).ConfigureAwait(false);
 
 			return playlist;
 		}
 
 		//lookup
-		public static Playlist Find(long id) {
+		public async static Task<Playlist> FindAsync(long id) {
 
 			var playlist = new Playlist ();
 
-			playlist.record.Read (id);
+			await playlist.record.ReadAsync (id).ConfigureAwait(false);
 
 			return playlist;
 		}
 
-		public static Playlist Find(long id, Client client) {
+		public async static Task<Playlist> FindAsync(long id, Client client) {
 
 			var playlist = new Playlist (client);
 
-			playlist.record.Read (id);
+			await playlist.record.ReadAsync (id).ConfigureAwait(false);
 
 			return playlist;
 		}
 
 		//update
-		public virtual void Save() {
+		public async Task SaveAsync() {
 
-			record.Update ();
+			await record.UpdateAsync ().ConfigureAwait(false);
 
 		}
 
-		public virtual void Save(Dictionary<string,object> tokens) {
+		public async Task SaveAsync(Dictionary<string,object> tokens) {
 
-			record.Update (tokens);
+			await record.UpdateAsync (tokens).ConfigureAwait(false);
 
 		}
 
 		//delete
-		public virtual void Delete() {
+		public async Task DeleteAsync() {
 
-			record.Delete ();
+			await record.DeleteAsync ().ConfigureAwait(false);
 
+		}
+
+		//SYNCHRONOUS METHODS
+
+		//create
+		public static Playlist Create(Dictionary<string,object> tokens) {
+			return Playlist.CreateAsync (tokens).Result;
+		}
+
+		public static Playlist Create(Dictionary<string,object> tokens, Client client){
+			return Playlist.CreateAsync (tokens, client).Result;
+		}
+
+		//lookup
+		public static Playlist Find(long id) {
+			return Playlist.FindAsync (id).Result;
+		}
+
+		public static Playlist Find(long id, Client client) {
+			return Playlist.FindAsync (id, client).Result;
+		}
+
+		//update
+		public void Save() {
+			SaveAsync().Wait();
+		}
+
+		public void Save(Dictionary<string,object> tokens) {
+			SaveAsync (tokens).Wait();
+		}
+
+		//delete
+		public void Delete() {
+			DeleteAsync ().Wait();
 		}
 
 	}

@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -87,19 +88,18 @@ namespace VzaarApi
 
 		}
 
-		public virtual void Read(Dictionary<string, string> query){
+		public async virtual Task ReadAsync(Dictionary<string, string> query){
 
 			string path = "";
 
-			Read (path, query);
+			await ReadAsync (path, query).ConfigureAwait(false);
 		}
 
-		public virtual void Read(string endpoint, Dictionary<string, string> query){
+		public async virtual Task ReadAsync(string endpoint, Dictionary<string, string> query){
 
-			var task = RecordClient.HttpGetAsync (RecordEndpoint + endpoint,query);
-			task.Wait ();
+			var result = await RecordClient.HttpGetAsync (RecordEndpoint + endpoint,query).ConfigureAwait(false);
 
-			UpdateList (task.Result);
+			UpdateList (result);
 
 		}
 
@@ -124,20 +124,20 @@ namespace VzaarApi
 			return query;
 		}
 
-		internal void GetPage(string link){
+		internal async Task GetPageAsync(string link){
 
 			var query = ExtractUriQuery (link);
-			Read (query);
+			await ReadAsync (query).ConfigureAwait(false);
 
 		}
 
-		public virtual bool First() {
+		public async virtual Task<bool> FirstAsync() {
 			
 			var link = Data ["meta"] ["links"] ["first"];
 
 			if (link.Type != JTokenType.Null) {
 				
-				GetPage ((string)link);
+				await GetPageAsync ((string)link).ConfigureAwait(false);
 
 				return true;
 
@@ -147,13 +147,13 @@ namespace VzaarApi
 			}
 		}
 
-		public virtual bool Next() {
+		public async virtual Task<bool> NextAsync() {
 			
 			var link = Data ["meta"] ["links"] ["next"];
 
 			if (link.Type != JTokenType.Null) {
 				
-				GetPage ((string)link);
+				await GetPageAsync ((string)link).ConfigureAwait(false);
 
 				return true;
 
@@ -164,13 +164,13 @@ namespace VzaarApi
 			}
 		}
 
-		public virtual bool Previous() {
+		public async virtual Task<bool> PreviousAsync() {
 			
 			var link = Data ["meta"] ["links"] ["previous"];
 
 			if (link.Type != JTokenType.Null) {
 
-				GetPage ((string)link);
+				await GetPageAsync ((string)link).ConfigureAwait(false);
 			
 				return true;
 
@@ -181,13 +181,13 @@ namespace VzaarApi
 			}
 		}
 
-		public virtual bool Last() {
+		public async virtual Task<bool> LastAsync() {
 			
 			var link = Data ["meta"] ["links"] ["last"];
 
 			if (link.Type != JTokenType.Null) {
 
-				GetPage ((string)link);
+				await GetPageAsync ((string)link).ConfigureAwait(false);
 			
 				return true;
 

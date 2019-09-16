@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -39,58 +40,145 @@ namespace VzaarApi
 			}
 		}
 
-		internal void FindSubtree(long id, Dictionary<string, string> query) {
+		internal async Task FindSubtreeAsync(long id, Dictionary<string, string> query) {
 
 			string path = "/" + id.ToString() + "/subtree";
 
-			records.Read (path, query);
+			await records.ReadAsync (path, query).ConfigureAwait(false);
 
 			Initialize ();
 		}
 
-		internal void FindSubtree(long id) {
-			FindSubtree (id, new Dictionary<string, string> ());
+		internal async Task FindSubtreeAsync(long id) {
+			await FindSubtreeAsync (id, new Dictionary<string, string> ()).ConfigureAwait(false);
 		}
+
+		//ASYNC METHODS
+
+		//get subtree
+		public async static Task<CategoriesList> SubtreeAsync(long id) {
+			var categories = new CategoriesList ();
+
+			await categories.FindSubtreeAsync (id).ConfigureAwait(false);
+
+			return categories;
+		}
+
+		public async static Task<CategoriesList> SubtreeAsync(long id, Client client) {
+			var categories = new CategoriesList (client);
+
+			await categories.FindSubtreeAsync (id).ConfigureAwait(false);
+
+			return categories;
+		}
+
+		public async static Task<CategoriesList> SubtreeAsync(long id, Dictionary<string, string> query){
+			var categories = new CategoriesList ();
+
+			await categories.FindSubtreeAsync (id, query).ConfigureAwait(false);
+
+			return categories;
+		}
+
+		public async static Task<CategoriesList> SubtreeAsync(long id, Dictionary<string, string> query, Client client){
+
+			var categories = new CategoriesList (client);
+
+			await categories.FindSubtreeAsync (id, query).ConfigureAwait(false);
+
+			return categories;
+		}
+
+		//paginate
+		public async static Task<CategoriesList> PaginateAsync(Dictionary<string,string> query) {
+
+			var categories = new CategoriesList ();
+
+			await categories.records.ReadAsync(query).ConfigureAwait(false);
+			categories.Initialize ();
+
+			return categories;
+		}
+
+		public async static Task<CategoriesList> PaginateAsync(Dictionary<string,string> query, Client client) {
+
+			var categories = new CategoriesList (client);
+
+			await categories.records.ReadAsync(query).ConfigureAwait(false);
+			categories.Initialize ();
+
+			return categories;
+		}
+
+		public async static Task<CategoriesList> PaginateAsync(){
+			return await CategoriesList.PaginateAsync (new Dictionary<string, string> ()).ConfigureAwait(false);
+		}
+
+		public async static Task<CategoriesList> PaginateAsync(Client client){
+			return await CategoriesList.PaginateAsync (new Dictionary<string, string> (), client).ConfigureAwait(false);
+		}
+
+		public async Task<bool> NextAsync() {
+			bool result = await records.NextAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> PrevousAsync() {
+			bool result = await records.PreviousAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> FirstAsync() {
+			bool result = await records.FirstAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> LastAsync() {
+			bool result = await records.LastAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+
+		// SYNCHRONOUS METHODS
 
 		//get subtree
 		public static CategoriesList Subtree(long id) {
-			var categories = new CategoriesList ();
-
-			categories.FindSubtree (id);
-
-			return categories;
+			return CategoriesList.SubtreeAsync(id).Result;
 		}
 
 		public static CategoriesList Subtree(long id, Client client) {
-			var categories = new CategoriesList (client);
-
-			categories.FindSubtree (id);
-
-			return categories;
+			return CategoriesList.SubtreeAsync(id, client).Result;
 		}
 
 		public static CategoriesList Subtree(long id, Dictionary<string, string> query){
-			var categories = new CategoriesList ();
-
-			categories.FindSubtree (id, query);
-
-			return categories;
+			return CategoriesList.SubtreeAsync(id, query).Result;
 		}
 
 		public static CategoriesList Subtree(long id, Dictionary<string, string> query, Client client){
-
-			var categories = new CategoriesList (client);
-
-			categories.FindSubtree (id, query);
-
-			return categories;
+			return CategoriesList.SubtreeAsync(id, query, client).Result;
 		}
 
 		//get list
 		public static IEnumerable<Category> EachItem() {
 			return CategoriesList.EachItem (new Dictionary<string, string> ());
 		}
-
+			
 		public static IEnumerable<Category> EachItem(Client client) {
 			return CategoriesList.EachItem (new Dictionary<string, string> (),client);
 		}
@@ -99,7 +187,8 @@ namespace VzaarApi
 
 			var categories = new CategoriesList ();
 
-			categories.records.Read (query);
+			var task = categories.records.ReadAsync (query);
+			task.Wait ();
 
 			do {
 
@@ -109,7 +198,7 @@ namespace VzaarApi
 					yield return item;
 				}
 
-			} while (categories.records.Next());
+			} while (categories.records.NextAsync().Result);
 
 		}
 
@@ -117,7 +206,8 @@ namespace VzaarApi
 
 			var categories = new CategoriesList (client);
 
-			categories.records.Read (query);
+			var task = categories.records.ReadAsync (query);
+			task.Wait ();
 
 			do {
 
@@ -127,73 +217,41 @@ namespace VzaarApi
 					yield return item;
 				}
 
-			} while (categories.records.Next());
+			} while (categories.records.NextAsync().Result);
 
 		}
 
 		//paginate
 		public static CategoriesList Paginate(Dictionary<string,string> query) {
-
-			var categories = new CategoriesList ();
-
-			categories.records.Read(query);
-			categories.Initialize ();
-
-			return categories;
+			return CategoriesList.PaginateAsync (query).Result;
 		}
 
 		public static CategoriesList Paginate(Dictionary<string,string> query, Client client) {
-
-			var categories = new CategoriesList (client);
-
-			categories.records.Read(query);
-			categories.Initialize ();
-
-			return categories;
+			return CategoriesList.PaginateAsync (query, client).Result;
 		}
 
 		public static CategoriesList Paginate(){
-			return CategoriesList.Paginate (new Dictionary<string, string> ());
+			return CategoriesList.PaginateAsync (new Dictionary<string, string> ()).Result;
 		}
 
 		public static CategoriesList Paginate(Client client){
-			return CategoriesList.Paginate (new Dictionary<string, string> (), client);
+			return CategoriesList.PaginateAsync (new Dictionary<string, string> (), client).Result;
 		}
 
-		public virtual bool Next() {
-			bool result = records.Next ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+		public bool Next() {
+			return NextAsync ().Result;
 		}
 
 		public virtual bool Prevous() {
-			bool result = records.Previous ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return PrevousAsync ().Result;
 		}
 
 		public virtual bool First() {
-			bool result = records.First ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return FirstAsync ().Result;
 		}
 
 		public virtual bool Last() {
-			bool result = records.Last ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return LastAsync ().Result;
 		}
 
 	}//end class

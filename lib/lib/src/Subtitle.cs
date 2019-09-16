@@ -45,43 +45,62 @@ namespace VzaarApi
 
 		}
 
+		//ASYNC methods
+
 		//create
-		internal virtual void Create(Dictionary<string,object> tokens) {
+		internal async Task CreateAsync(Dictionary<string,object> tokens) {
 
 			if(tokens.ContainsKey("file")) {
 
 				var filepath = tokens["file"].ToString();
 
-				record.Create (tokens, null, filepath);
+				await record.CreateAsync (tokens, null, filepath).ConfigureAwait(false);
 
 			} else {
 
-				record.Create (tokens);
+				await record.CreateAsync (tokens).ConfigureAwait(false);
 				
 			}
 		}
 
 		//update
-		internal virtual void Save(Dictionary<string,object> tokens) {
+		internal async Task SaveAsync(Dictionary<string,object> tokens) {
 
 			if(tokens.ContainsKey("file")) {
 
 				var filepath = tokens["file"].ToString();
 
-				record.Update (tokens, null, filepath);
+				await record.UpdateAsync (tokens, null, filepath).ConfigureAwait(false);
 
 			} else {
-
-				record.Update (tokens);
+				
+				await record.UpdateAsync (tokens).ConfigureAwait(false);
 
 			}
 		}
 
 		//delete
-		internal virtual void Delete() {
+		internal async Task DeleteAsync() {
 
-			record.Delete ();
+			await record.DeleteAsync ().ConfigureAwait(false);
 
+		}
+
+		// synchronous methods
+
+		//create
+		internal void Create(Dictionary<string,object> tokens) {
+			CreateAsync (tokens).Wait ();
+		}
+
+		//update
+		internal void Save(Dictionary<string,object> tokens) {
+			SaveAsync (tokens).Wait ();
+		}
+
+		//delete
+		internal void Delete() {
+			DeleteAsync ().Wait ();
 		}
 
 	}//end class

@@ -66,11 +66,11 @@ namespace VzaarApi
 
 				if (containsguid == true) {
 					
-					record.Create (tokens);
+					await record.CreateAsync (tokens).ConfigureAwait(false);
 
 				} else if (containsurl == true) {
 					
-					result = LinkUpload.Create (tokens,record.RecordClient);
+					result = await LinkUpload.CreateAsync (tokens,record.RecordClient).ConfigureAwait(false);
 
 				} else {
 
@@ -81,14 +81,14 @@ namespace VzaarApi
 					if(file.Exists == false)
 						throw new VzaarApiException("File does not exist: "+ filepath);
 
-					Signature signature = Signature.Create (filepath, record.RecordClient);
+					Signature signature = await Signature.CreateAsync (filepath, record.RecordClient).ConfigureAwait(false);
 
-					await record.RecordClient.HttpPostS3Async (filepath, signature);
+					await record.RecordClient.HttpPostS3Async (filepath, signature).ConfigureAwait(false);
 
 					tokens.Remove ("filepath");
 					tokens.Add ("guid", (string)signature ["guid"]);
 
-					await createDataAsync (tokens);
+					await createDataAsync (tokens).ConfigureAwait(false);
 					
 				}
 
@@ -99,13 +99,15 @@ namespace VzaarApi
 
 			return result;
 		}
+
+		//ASYNC METHODS
 			
 		//create with additiobal parameters
 		public async static Task<Video> CreateAsync(Dictionary<string,object> tokens) {
 
 			var video = new Video ();
 
-			object urlvideo = await video.createDataAsync (tokens);
+			object urlvideo = await video.createDataAsync (tokens).ConfigureAwait(false);
 			if (urlvideo != null)
 				return (Video)urlvideo;
 
@@ -116,7 +118,7 @@ namespace VzaarApi
 
 			var video = new Video (client);
 
-			object urlvideo = await video.createDataAsync (tokens);
+			object urlvideo = await video.createDataAsync (tokens).ConfigureAwait(false);
 			if (urlvideo != null)
 				return (Video)urlvideo;
 
@@ -130,7 +132,7 @@ namespace VzaarApi
 
 			var file = new Dictionary<string, object> ();
 			file.Add ("filepath",filepath);
-			await video.createDataAsync(file);
+			await video.createDataAsync(file).ConfigureAwait(false);
 
 			return video;
 		}
@@ -141,48 +143,128 @@ namespace VzaarApi
 
 			var file = new Dictionary<string, object> ();
 			file.Add ("filepath",filepath);
-			await video.createDataAsync(file);
+			await video.createDataAsync(file).ConfigureAwait(false);
 
 			return video;
 		}
 
 		//lookup
-		public static Video Find(long id) {
+		public async static Task<Video> FindAsync(long id) {
 
 			var video = new Video ();
 
-			video.record.Read (id);
+			await video.record.ReadAsync (id).ConfigureAwait(false);
 
 			return video;
 		}
 
-		public static  Video Find(long id, Client client) {
+		public async static Task<Video> FindAsync(long id, Client client) {
 
 			var video = new Video (client);
 
-			video.record.Read (id);
+			await video.record.ReadAsync (id).ConfigureAwait(false);
 
 			return video;
 		}
 
 		//update
-		public virtual void Save() {
+		public async Task SaveAsync() {
 
-			record.Update ();
+			await record.UpdateAsync ().ConfigureAwait(false);
 
 		}
 
-		public virtual void Save(Dictionary<string,object> tokens) {
+		public async Task SaveAsync(Dictionary<string,object> tokens) {
 
-			record.Update (tokens);
+			await record.UpdateAsync (tokens).ConfigureAwait(false);
 
 		}
 
 		//delete
-		public virtual void Delete() {
+		public async Task DeleteAsync() {
 
-			record.Delete ();
+			await record.DeleteAsync ().ConfigureAwait(false);
 
+		}
+
+		//Subtitle create
+		public async Task<Subtitle> SubtitleCreateAsync(Dictionary<string,object> tokens){
+
+			subtitle = new Subtitle ((long)record["id"],record.RecordClient);
+			await subtitle.CreateAsync(tokens).ConfigureAwait(false);
+
+			//refresh video object
+			await record.ReadAsync ((long)record["id"]).ConfigureAwait(false);
+
+			return subtitle;
+
+		}
+
+		//Subtitle update
+		public async Task<Subtitle> SubtitleUpdateAsync(long subtitleId, Dictionary<string,object> tokens){
+
+			subtitle = new Subtitle ((long)record["id"], record.RecordClient, subtitleId);
+			await subtitle.SaveAsync(tokens).ConfigureAwait(false);
+
+			//refresh video object
+			await record.ReadAsync ((long)record["id"]).ConfigureAwait(false);
+
+			return subtitle;
+
+		} 
+
+		//Subtitle delete
+		public async Task<Subtitle> SubtitleDeleteAsync(long subtitleId){
+
+			subtitle = new Subtitle ((long)record["id"], record.RecordClient, subtitleId);
+			await subtitle.DeleteAsync().ConfigureAwait(false);
+
+			//refresh video object
+			await record.ReadAsync ((long)record["id"]).ConfigureAwait(false);
+
+			return subtitle;
+		}
+
+		//Set Image Frame
+		public async Task SetImageFrameAsync(Dictionary<string,object> tokens){
+
+			var videoId = (long)record["id"];
+
+			if(tokens.ContainsKey("image")) {
+
+				var filepath = tokens["image"].ToString();
+				await record.CreateAsync (tokens, "/"+videoId.ToString() +"/image", filepath).ConfigureAwait(false);
+
+			} else {
+
+				await record.UpdateAsync (tokens, "/image").ConfigureAwait(false);
+
+			}
+		}
+
+		//SYNC METHODS
+
+		//lookup
+		public static Video Find(long id) {
+			return Video.FindAsync (id).Result;
+		}
+
+		public static  Video Find(long id, Client client) {
+			return Video.FindAsync (id, client).Result;
+		}
+
+		//update
+		public void Save() {
+			SaveAsync().Wait();
+		}
+
+		public void Save(Dictionary<string,object> tokens) {
+			SaveAsync (tokens).Wait();
+		}
+
+		//delete
+		public void Delete() {
+			DeleteAsync ().Wait();
 		}
 
 		//SubtitlesList get
@@ -194,57 +276,22 @@ namespace VzaarApi
 
 		//Subtitle create
 		public virtual Subtitle SubtitleCreate(Dictionary<string,object> tokens){
-
-			subtitle = new Subtitle ((long)record["id"],record.RecordClient);
-			subtitle.Create(tokens);
-			
-			//refresh video object
-			record.Read ((long)record["id"]);
-
-			return subtitle;
-
+			return SubtitleCreateAsync (tokens).Result;
 		}
 
 		//Subtitle update
-		public virtual Subtitle SubtitleUpdate(long subtitleId, Dictionary<string,object> tokens){
-
-			subtitle = new Subtitle ((long)record["id"], record.RecordClient, subtitleId);
-			subtitle.Save(tokens);
-
-			//refresh video object
-			record.Read ((long)record["id"]);
-
-			return subtitle;
-			
+		public Subtitle SubtitleUpdate(long subtitleId, Dictionary<string,object> tokens){
+			return SubtitleUpdateAsync (subtitleId, tokens).Result;
 		} 
 
 		//Subtitle delete
-		public virtual Subtitle SubtitleDelete(long subtitleId){
-
-			subtitle = new Subtitle ((long)record["id"], record.RecordClient, subtitleId);
-			subtitle.Delete();
-
-			//refresh video object
-			record.Read ((long)record["id"]);
-
-			return subtitle;
+		public Subtitle SubtitleDelete(long subtitleId){
+			return SubtitleDeleteAsync (subtitleId).Result;
 		}
 
 		//Set Image Frame
-		public virtual void SetImageFrame(Dictionary<string,object> tokens){
-
-			var videoId = (long)record["id"];
-
-			if(tokens.ContainsKey("image")) {
-
-				var filepath = tokens["image"].ToString();
-				record.Create (tokens, "/"+videoId.ToString() +"/image", filepath);
-
-			} else {
-
-				record.Update (tokens, "/image");
-
-			}
+		public void SetImageFrame(Dictionary<string,object> tokens){
+			SetImageFrameAsync (tokens).Wait ();
 		}
 	}
 }

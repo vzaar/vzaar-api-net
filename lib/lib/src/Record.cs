@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -139,16 +140,15 @@ namespace VzaarApi
 
 		}
 
-		public virtual void Create(Dictionary<string,object> tokens){
+		public async virtual Task CreateAsync(Dictionary<string,object> tokens){
 
 				string body = JsonConvert.SerializeObject (tokens);
-				var task = RecordClient.HttpPostAsync (RecordEndpoint, body);
-				task.Wait ();
+			    var result = await RecordClient.HttpPostAsync (RecordEndpoint, body).ConfigureAwait(false);
 
-				UpdateRecord(task.Result);
+				UpdateRecord(result);
 		}
 
-		public virtual void Create(Dictionary<string,object> tokens, string subEndpoint = null, string filepath = null){
+		public async virtual Task CreateAsync(Dictionary<string,object> tokens, string subEndpoint = null, string filepath = null){
 
 			string endpoint = RecordEndpoint;
 
@@ -158,10 +158,9 @@ namespace VzaarApi
 
 			if ( filepath == null) {
 				string body = JsonConvert.SerializeObject (tokens);
-				var task = RecordClient.HttpPostAsync (endpoint, body);
-				task.Wait ();
+				var result = await RecordClient.HttpPostAsync (endpoint, body).ConfigureAwait(false);
 
-				UpdateRecord(task.Result);
+				UpdateRecord(result);
 			} else {
 
 				Dictionary<string,string> postFields = new Dictionary<string, string> ();
@@ -169,25 +168,23 @@ namespace VzaarApi
 					postFields.Add (entry.Key, entry.Value.ToString ());
 				}
 
-				var task = RecordClient.HttpPostFormAsync (endpoint, filepath, postFields);
-				task.Wait ();
+				var result = await RecordClient.HttpPostFormAsync (endpoint, filepath, postFields).ConfigureAwait(false);
 
-				UpdateRecord(task.Result);
+				UpdateRecord(result);
 			}
 		}
 
-		public virtual void Read(long id){
+		public async virtual Task ReadAsync(long id){
 
 			string endpoint = RecordEndpoint + "/" + id.ToString();
 
-			var task = RecordClient.HttpGetAsync (endpoint,new Dictionary<string, string>());
-			task.Wait ();
+			var result = await RecordClient.HttpGetAsync (endpoint,new Dictionary<string, string>()).ConfigureAwait(false);
 
-			UpdateRecord(task.Result);
+			UpdateRecord(result);
 		}
 
 
-		public virtual void Update(Dictionary<string,object> tokens, string subEndpoint = null, string filepath = null){
+		public async virtual Task UpdateAsync(Dictionary<string,object> tokens, string subEndpoint = null, string filepath = null){
 			
 			string endpoint = RecordEndpoint + "/" + this["id"].ToString();
 
@@ -199,10 +196,9 @@ namespace VzaarApi
 
 				string body = JsonConvert.SerializeObject(tokens);
 
-				var task = RecordClient.HttpPatchAsync (endpoint, body);
-				task.Wait ();
+				var result = await RecordClient.HttpPatchAsync (endpoint, body).ConfigureAwait(false);
 
-				UpdateRecord(task.Result);
+				UpdateRecord(result);
 
 			} else {
 
@@ -211,31 +207,28 @@ namespace VzaarApi
 					postFields.Add (entry.Key, entry.Value.ToString ());
 				}
 
-				var task = RecordClient.HttpPatchFormAsync (endpoint, filepath, postFields);
-				task.Wait ();
+				var result = await RecordClient.HttpPatchFormAsync (endpoint, filepath, postFields).ConfigureAwait(false);
 
-				UpdateRecord(task.Result);
+				UpdateRecord(result);
 
 			}
 		}
 
-		public virtual void Update(){
+		public async virtual Task UpdateAsync(){
 
 			string endpoint = RecordEndpoint + "/" + this["id"].ToString();
 			string body = JsonConvert.SerializeObject(cache);
 
-			var task = RecordClient.HttpPatchAsync (endpoint, body);
-			task.Wait ();
+			var result = await RecordClient.HttpPatchAsync (endpoint, body).ConfigureAwait(false);
 
-			UpdateRecord(task.Result);
+			UpdateRecord(result);
 		}
 
-		public virtual void Delete(){
+		public async virtual Task DeleteAsync(){
 			
 			string endpoint = RecordEndpoint + "/" + this["id"].ToString();
 
-			var task = RecordClient.HttpDeleteAsync (endpoint);
-			task.Wait ();
+			await RecordClient.HttpDeleteAsync (endpoint).ConfigureAwait(false);
 
 			UpdateRecord (empty_record);
 		}

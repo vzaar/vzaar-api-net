@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -45,75 +46,125 @@ namespace VzaarApi
 			get { return record.Edited; }
 		}
 
-		public CategoriesList Subtree() {
+		// ASYNC METHODS
+
+		public async Task<CategoriesList> SubtreeAsync() {
 
 			long id = (long)this ["id"];
 			var query = new Dictionary<string,string> ();
-			return CategoriesList.Subtree (id, query, record.RecordClient);
+			return await CategoriesList.SubtreeAsync (id, query, record.RecordClient).ConfigureAwait(false);
 		}
 
-		public CategoriesList Subtree(Dictionary<string, string> query) {
+		public async Task<CategoriesList> SubtreeAsync(Dictionary<string, string> query) {
 
 			long id = (long)this ["id"];
-			return CategoriesList.Subtree (id, query, record.RecordClient);
+			return await CategoriesList.SubtreeAsync (id, query, record.RecordClient).ConfigureAwait(false);
 		}
 
 		//lookup
-		public static Category Find(long id) {
+		public async static Task<Category> FindAsync(long id) {
 
 			var category = new Category ();
 
-			category.record.Read (id);
+			await category.record.ReadAsync (id).ConfigureAwait(false);
 
 			return category;
 		}
 
-		public static Category Find(long id, Client client) {
+		public async static Task<Category> FindAsync(long id, Client client) {
 
 			var category = new Category (client);
 
-			category.record.Read (id);
+			await category.record.ReadAsync (id).ConfigureAwait(false);
 
 			return category;
 		}
 
 		//create
-		public static Category Create(Dictionary<string,object> tokens) {
+		public async static Task<Category> CreateAsync(Dictionary<string,object> tokens) {
 
 			var category = new Category ();
 
-			category.record.Create (tokens);
+			await category.record.CreateAsync (tokens).ConfigureAwait(false);
 
 			return category;
 		}
 
-		public static Category Create(Dictionary<string,object> tokens, Client client){
+		public async static Task<Category> CreateAsync(Dictionary<string,object> tokens, Client client){
 
 			var category = new Category (client);
 
-			category.record.Create (tokens);
+			await category.record.CreateAsync (tokens).ConfigureAwait(false);
 
 			return category;
 		}
 
 		//update
-		public virtual void Save() {
+		public async Task SaveAsync() {
 
-			record.Update ();
+			await record.UpdateAsync ().ConfigureAwait(false);
 
 		}
 
-		public virtual void Save(Dictionary<string,object> tokens) {
+		public async Task SaveAsync(Dictionary<string,object> tokens) {
 
-			record.Update (tokens);
+			await record.UpdateAsync (tokens).ConfigureAwait(false);
 
 		}
 
 		//delete
-		public virtual void Delete() {
+		public async Task DeleteAsync() {
 
-			record.Delete ();
+			await record.DeleteAsync ().ConfigureAwait(false);
 
+		}
+
+		//SYNCH METHODS
+
+		public CategoriesList Subtree() {
+
+			long id = (long)this ["id"];
+			var query = new Dictionary<string,string> ();
+
+			return CategoriesList.SubtreeAsync (id, query, record.RecordClient).Result;
+		}
+
+		public CategoriesList Subtree(Dictionary<string, string> query) {
+
+			long id = (long)this ["id"];
+			return CategoriesList.SubtreeAsync (id, query, record.RecordClient).Result;
+		}
+
+		//lookup
+		public static Category Find(long id) {
+			return Category.FindAsync(id).Result;
+		}
+
+		public static Category Find(long id, Client client) {
+			return Category.FindAsync(id, client).Result;
+		}
+
+		//create
+		public static Category Create(Dictionary<string,object> tokens) {
+			return Category.CreateAsync (tokens).Result;
+		}
+
+		public static Category Create(Dictionary<string,object> tokens, Client client){
+			return Category.CreateAsync (tokens, client).Result;
+		}
+
+		//update
+		public void Save() {
+			SaveAsync().Wait();
+		}
+
+		public void Save(Dictionary<string,object> tokens) {
+			SaveAsync (tokens).Wait();
+		}
+
+		//delete
+		public void Delete() {
+			DeleteAsync ().Wait();
 		}
 
 	}

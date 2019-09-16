@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -38,6 +39,75 @@ namespace VzaarApi
 			}
 		}
 
+		//ASYNC METHODS
+
+		//paginate
+		public async static Task<RecipesList> PaginateAsync(Dictionary<string,string> query) {
+
+			var recipes = new RecipesList ();
+
+			await recipes.records.ReadAsync(query).ConfigureAwait(false);
+			recipes.Initialize ();
+
+			return recipes;
+		}
+
+		public async static Task<RecipesList> PaginateAsync(Dictionary<string,string> query, Client client) {
+
+			var recipes = new RecipesList (client);
+
+			await recipes.records.ReadAsync(query).ConfigureAwait(false);
+			recipes.Initialize ();
+
+			return recipes;
+		}
+
+		public async static Task<RecipesList> PaginateAsync(){
+			return await RecipesList.PaginateAsync (new Dictionary<string, string> ()).ConfigureAwait(false);
+		}
+
+		public async static Task<RecipesList> PaginateAsync(Client client){
+			return await RecipesList.PaginateAsync (new Dictionary<string, string> (), client).ConfigureAwait(false);
+		}
+
+		public async Task<bool> NextAsync() {
+			bool result = await records.NextAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> PrevousAsync() {
+			bool result = await records.PreviousAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> FirstAsync() {
+			bool result = await records.FirstAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		public async Task<bool> LastAsync() {
+			bool result = await records.LastAsync ().ConfigureAwait(false);
+
+			if (result)
+				Initialize ();
+
+			return result;
+		}
+
+		//SYNC METHODS
+
 		//get list
 		public static IEnumerable<Recipe> EachItem() {
 			return RecipesList.EachItem (new Dictionary<string, string> ());
@@ -51,25 +121,27 @@ namespace VzaarApi
 
 			var recipes = new RecipesList ();
 
-			recipes.records.Read (query);
+			var task = recipes.records.ReadAsync (query);
+			task.Wait ();
 
 			do {
-				
+
 				recipes.Initialize ();
 
 				foreach (var item in recipes.Page) {
 					yield return item;
 				}
 
-			} while (recipes.records.Next());
-	
+			} while (recipes.records.NextAsync().Result);
+
 		}
 
 		public static IEnumerable<Recipe> EachItem(Dictionary<string, string> query, Client client) {
 
 			var recipes = new RecipesList (client);
 
-			recipes.records.Read (query);
+			var task = recipes.records.ReadAsync (query);
+			task.Wait ();
 
 			do {
 
@@ -79,73 +151,41 @@ namespace VzaarApi
 					yield return item;
 				}
 
-			} while (recipes.records.Next());
+			} while (recipes.records.NextAsync().Result);
 
 		}
 
 		//paginate
 		public static RecipesList Paginate(Dictionary<string,string> query) {
-
-			var recipes = new RecipesList ();
-
-			recipes.records.Read(query);
-			recipes.Initialize ();
-
-			return recipes;
+			return RecipesList.PaginateAsync (query).Result;
 		}
 
 		public static RecipesList Paginate(Dictionary<string,string> query, Client client) {
-
-			var recipes = new RecipesList (client);
-
-			recipes.records.Read(query);
-			recipes.Initialize ();
-
-			return recipes;
+			return RecipesList.PaginateAsync (query, client).Result;
 		}
 
 		public static RecipesList Paginate(){
-			return RecipesList.Paginate (new Dictionary<string, string> ());
+			return RecipesList.PaginateAsync (new Dictionary<string, string> ()).Result;
 		}
 
 		public static RecipesList Paginate(Client client){
-			return RecipesList.Paginate (new Dictionary<string, string> (), client);
+			return RecipesList.PaginateAsync (new Dictionary<string, string> (), client).Result;
 		}
 
-		public virtual bool Next() {
-			bool result = records.Next ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+		public bool Next() {
+			return NextAsync ().Result;
 		}
 
 		public virtual bool Prevous() {
-			bool result = records.Previous ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return PrevousAsync ().Result;
 		}
 
 		public virtual bool First() {
-			bool result = records.First ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return FirstAsync ().Result;
 		}
 
 		public virtual bool Last() {
-			bool result = records.Last ();
-
-			if (result)
-				Initialize ();
-
-			return result;
+			return LastAsync ().Result;
 		}
 
 	}//end class

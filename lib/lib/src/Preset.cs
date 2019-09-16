@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace VzaarApi
 {
@@ -39,23 +40,36 @@ namespace VzaarApi
 
 		}
 
+		//ASYNC METHODS
+
 		//lookup
-		public static Preset Find(long id) {
+		public async static Task<Preset> FindAsync(long id) {
 
 			var preset = new Preset ();
 
-			preset.record.Read (id);
+			await preset.record.ReadAsync (id).ConfigureAwait(false);
 
 			return preset;
 		}
 
-		public static Preset Find(long id, Client client) {
+		public async static Task<Preset> FindAsync(long id, Client client) {
 
 			var preset = new Preset (client);
 
-			preset.record.Read (id);
+			await preset.record.ReadAsync (id).ConfigureAwait(false);
 
 			return preset;
+		}
+
+		//SYNC METHODS
+
+		//lookup
+		public static Preset Find(long id) {
+			return Preset.FindAsync (id).Result;
+		}
+
+		public static Preset Find(long id, Client client) {
+			return Preset.FindAsync (id, client).Result;
 		}
 	}
 }

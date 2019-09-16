@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.IO;
 
 namespace VzaarApi
@@ -36,7 +37,7 @@ namespace VzaarApi
 
 		}
 
-		internal void CreateSingle(Dictionary<string,object> tokens) {
+		internal async Task CreateSingleAsync(Dictionary<string,object> tokens) {
 
 			if (tokens.ContainsKey ("uploader") == false) {
 				tokens.Add ("uploader", Client.UPLOADER + Client.VERSION);
@@ -44,17 +45,17 @@ namespace VzaarApi
 
 			string path = "/single/2";
 
-			record.Create (tokens, path);
+			await record.CreateAsync (tokens, path).ConfigureAwait(false);
 
 		}
 
-		internal void CreateSingle() {
+		internal async Task CreateSingleAsync() {
 
-			CreateSingle (new Dictionary<string, object> ());
+			await CreateSingleAsync (new Dictionary<string, object> ()).ConfigureAwait(false);
 		
 		}
 
-		internal void CreateMultipart(Dictionary<string,object> tokens) {
+		internal async Task CreateMultipartAsync(Dictionary<string,object> tokens) {
 
 			if (tokens.ContainsKey ("uploader") == false) {
 				tokens.Add ("uploader", Client.UPLOADER + Client.VERSION);
@@ -62,10 +63,10 @@ namespace VzaarApi
 
 			string path = "/multipart/2";
 
-			record.Create (tokens, path);
+			await record.CreateAsync (tokens, path).ConfigureAwait(false);
 		}
 
-		internal void CreateFromFile(string filepath) {
+		internal async Task CreateFromFileAsync(string filepath) {
 
 			FileInfo file = new FileInfo (filepath);
 
@@ -81,18 +82,92 @@ namespace VzaarApi
 			tokens.Add ("filesize", filesize);
 
 			if (filesize >= Client.MULTIPART_MIN_SIZE) {
-				CreateMultipart (tokens);	
+				await CreateMultipartAsync (tokens).ConfigureAwait(false);	
 			} else {
-				CreateSingle (tokens);
+				await CreateSingleAsync (tokens).ConfigureAwait(false);
 			}
 		}
+			
+		//create from file async
+		public async static Task<Signature> CreateAsync(string filepath) {
 
-		//create from file
+			var signature = new Signature ();
+
+			await signature.CreateFromFileAsync (filepath).ConfigureAwait(false);
+
+			return signature;
+		}
+
+		public async static Task<Signature> CreateAsync(string filepath, Client client) {
+
+			var signature = new Signature (client);
+
+			await signature.CreateFromFileAsync (filepath).ConfigureAwait(false);
+
+			return signature;
+		}
+
+		public async static Task<Signature> SingleAsync(){
+
+			var signature = new Signature ();
+
+			await signature.CreateSingleAsync ().ConfigureAwait(false);
+
+			return signature;
+		}
+
+		public async static Task<Signature> SingleAsync(Client client){
+
+			var signature = new Signature (client);
+
+			await signature.CreateSingleAsync ().ConfigureAwait(false);
+
+			return signature;
+		}
+
+		public async static Task<Signature> SingleAsync(Dictionary<string,object> tokens){
+
+			var signature = new Signature ();
+
+			await signature.CreateSingleAsync (tokens).ConfigureAwait(false);
+
+			return signature;
+		}
+
+		public async static Task<Signature> SingleAsync(Dictionary<string,object> tokens, Client client){
+
+			var signature = new Signature (client);
+
+			await signature.CreateSingleAsync (tokens).ConfigureAwait(false);
+
+			return signature;
+		}
+
+		public async static Task<Signature> MultipartAsync(Dictionary<string,object> tokens){
+
+			var signature = new Signature ();
+
+			await signature.CreateMultipartAsync (tokens).ConfigureAwait(false);
+
+			return signature;
+		}
+
+		public async static Task<Signature> MultipartAsync(Dictionary<string,object> tokens, Client client){
+
+			var signature = new Signature (client);
+
+			await signature.CreateMultipartAsync (tokens).ConfigureAwait(false);
+
+			return signature;
+		}
+
+		//create from file sync
 		public static Signature Create(string filepath) {
 
 			var signature = new Signature ();
 
-			signature.CreateFromFile (filepath);
+			var task = signature.CreateFromFileAsync (filepath);
+			task.Wait ();
 
 			return signature;
 		}
@@ -101,7 +176,8 @@ namespace VzaarApi
 
 			var signature = new Signature (client);
 
-			signature.CreateFromFile (filepath);
+			var task = signature.CreateFromFileAsync (filepath);
+			task.Wait ();
 
 			return signature;
 		}
@@ -110,7 +186,8 @@ namespace VzaarApi
 
 			var signature = new Signature ();
 
-			signature.CreateSingle ();
+			var task = signature.CreateSingleAsync ();
+			task.Wait ();
 
 			return signature;
 		}
@@ -119,7 +196,8 @@ namespace VzaarApi
 
 			var signature = new Signature (client);
 
-			signature.CreateSingle ();
+			var task = signature.CreateSingleAsync ();
+			task.Wait ();
 
 			return signature;
 		}
@@ -128,16 +206,18 @@ namespace VzaarApi
 
 			var signature = new Signature ();
 
-			signature.CreateSingle (tokens);
+			var task = signature.CreateSingleAsync (tokens);
+			task.Wait ();
 
 			return signature;
 		}
 
 		public static Signature Single(Dictionary<string,object> tokens, Client client){
-			
+
 			var signature = new Signature (client);
 
-			signature.CreateSingle (tokens);
+			var task = signature.CreateSingleAsync (tokens);
+			task.Wait ();
 
 			return signature;
 		}
@@ -146,7 +226,8 @@ namespace VzaarApi
 
 			var signature = new Signature ();
 
-			signature.CreateMultipart (tokens);
+			var task = signature.CreateMultipartAsync (tokens);
+			task.Wait ();
 
 			return signature;
 		}
@@ -155,7 +236,8 @@ namespace VzaarApi
 
 			var signature = new Signature (client);
 
-			signature.CreateMultipart (tokens);
+			var task = signature.CreateMultipartAsync (tokens);
+			task.Wait ();
 
 			return signature;
 		}
